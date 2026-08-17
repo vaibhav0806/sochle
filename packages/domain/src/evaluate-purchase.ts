@@ -107,10 +107,27 @@ function inRange(date: string, start: string, end: string): boolean {
   return date >= start && date <= end;
 }
 
-export function evaluatePurchase(input: EvaluatePurchaseInput): DecisionResult {
+type PreparedPurchaseCalculation = {
+  assumptionsConfirmed: boolean;
+  configuredSalaryDate: string;
+  dataIssues: DecisionIssue[];
+  forecast: DailyForecast;
+  forecastInput: Parameters<typeof buildDailyForecast>[0];
+  headroomInput: Parameters<typeof calculateHeadrooms>[0];
+  headrooms: Headrooms;
+  inputs: DecisionInputs;
+  liquidCashMinor: number;
+  purchasePriceMinor: number;
+  rules: RuleSet;
+};
+
+function preparePurchaseCalculation(
+  input: EvaluatePurchaseInput,
+  requirePositivePrice: boolean
+): PreparedPurchaseCalculation {
   const evaluatedOn = evaluatedDate(input.evaluatedAt);
   const rules = validateRuleSet(input.rules, evaluatedOn);
-  const purchasePriceMinor = assertMoney(input.price, "Purchase price", true);
+  const purchasePriceMinor = assertMoney(input.price, "Purchase price", requirePositivePrice);
   const liquidCashMinor = assertSignedMoney(input.financialState.liquidCash, "Liquid cash");
   const cardObligationsMinor = assertMoney(
     input.financialState.cardObligations,
@@ -259,6 +276,77 @@ export function evaluatePurchase(input: EvaluatePurchaseInput): DecisionResult {
     startDate: evaluatedOn,
   };
   const forecast = buildDailyForecast(forecastInput);
+  const dataIssues = input.dataIssues.map((issue) => ({
+    ...issue,
+    effect: issue.effect === null ? null : { ...issue.effect },
+  }));
+  dataIssues.push(...derivedIssues);
+  return {
+    assumptionsConfirmed,
+    configuredSalaryDate,
+    dataIssues,
+    forecast,
+    forecastInput,
+    headroomInput,
+    headrooms,
+    inputs: {
+      additionalObligationsMinor,
+      confirmedObligationsMinor,
+      dataIssues: structuredClone(dataIssues),
+      essentialSpendingMinor: rules.essentialMonthlySpending.minor,
+      evaluatedAt: input.evaluatedAt,
+      expectedIncomeMinor,
+      financialState: structuredClone(input.financialState),
+      horizonEnd,
+      immediateObligationsMinor,
+      investmentTargetMinor: rules.monthlyInvestmentTarget.minor,
+      liquidCashMinor,
+      minimumBufferMinor: rules.minimumBuffer.minor,
+      nextSalaryDate: rules.salary.confirmed ? configuredSalaryDate : null,
+      plannedPurchases: structuredClone(input.plannedPurchases),
+      plannedPurchasesMinor,
+      price: { ...input.price },
+      rules: structuredClone(rules),
+      snapshotId: input.snapshotId,
+    },
+    liquidCashMinor,
+    purchasePriceMinor,
+    rules,
+  };
+}
+
+export type TodayPosition = {
+  forecast: DailyForecast;
+  headrooms: Headrooms;
+  safeToSpendMinor: number;
+};
+
+export function calculateTodayPosition(input: Omit<EvaluatePurchaseInput, "price">): TodayPosition {
+  const prepared = preparePurchaseCalculation(
+    { ...input, price: { currency: "INR", minor: 0 } },
+    false
+  );
+  return {
+    forecast: prepared.forecast,
+    headrooms: prepared.headrooms,
+    safeToSpendMinor: Math.max(0, prepared.headrooms.goalMinor),
+  };
+}
+
+export function evaluatePurchase(input: EvaluatePurchaseInput): DecisionResult {
+  const {
+    assumptionsConfirmed,
+    configuredSalaryDate,
+    dataIssues,
+    forecast,
+    forecastInput,
+    headroomInput,
+    headrooms,
+    inputs,
+    liquidCashMinor,
+    purchasePriceMinor,
+    rules,
+  } = preparePurchaseCalculation(input, true);
   const verdictInput = {
     comfortableHeadroomMinor: headrooms.comfortableMinor,
     currentComfortableHeadroomMinor:
@@ -270,11 +358,6 @@ export function evaluatePurchase(input: EvaluatePurchaseInput): DecisionResult {
     technicalHeadroomMinor: headrooms.technicalMinor,
   };
   const financialVerdict = selectFinancialVerdict(verdictInput);
-  const dataIssues = input.dataIssues.map((issue) => ({
-    ...issue,
-    effect: issue.effect === null ? null : { ...issue.effect },
-  }));
-  dataIssues.push(...derivedIssues);
   const thresholdMinor = materialityThresholdMinor(
     purchasePriceMinor,
     rules.materiality.absoluteCap.minor,
@@ -340,26 +423,7 @@ export function evaluatePurchase(input: EvaluatePurchaseInput): DecisionResult {
     forecast,
     formulaVersion: 1,
     headrooms,
-    inputs: {
-      additionalObligationsMinor,
-      confirmedObligationsMinor,
-      dataIssues: structuredClone(dataIssues),
-      essentialSpendingMinor: rules.essentialMonthlySpending.minor,
-      evaluatedAt: input.evaluatedAt,
-      expectedIncomeMinor,
-      financialState: structuredClone(input.financialState),
-      horizonEnd,
-      immediateObligationsMinor,
-      investmentTargetMinor: rules.monthlyInvestmentTarget.minor,
-      liquidCashMinor,
-      minimumBufferMinor: rules.minimumBuffer.minor,
-      nextSalaryDate: rules.salary.confirmed ? configuredSalaryDate : null,
-      plannedPurchases: structuredClone(input.plannedPurchases),
-      plannedPurchasesMinor,
-      price: { ...input.price },
-      rules: structuredClone(rules),
-      snapshotId: input.snapshotId,
-    },
+    inputs,
     verdict,
   };
 }

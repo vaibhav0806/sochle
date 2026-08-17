@@ -55,6 +55,9 @@ importers:
       "@sochle/db":
         specifier: workspace:*
         version: link:../../packages/db
+      "@sochle/domain":
+        specifier: workspace:*
+        version: link:../../packages/domain
       "@sochle/fold":
         specifier: workspace:*
         version: link:../../packages/fold

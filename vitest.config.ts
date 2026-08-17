@@ -5,6 +5,8 @@ export default defineConfig({
     coverage: {
       exclude: ["**/index.ts", "**/schema/**", "**/*.test.ts"],
       include: [
+        "apps/web/lib/money.ts",
+        "apps/web/lib/server/decision-service.ts",
         "packages/contracts/src/**/*.ts",
         "packages/db/src/**/*.ts",
         "packages/domain/src/**/*.ts",

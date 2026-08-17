@@ -40,10 +40,11 @@ export { buildExplanation } from "./explanations";
 export type { DecisionExplanation, ExplanationInput } from "./explanations";
 export { selectFinancialVerdict } from "./verdict";
 export type { FinancialVerdict, FinancialVerdictInput, Verdict } from "./verdict";
-export { evaluatePurchase } from "./evaluate-purchase";
+export { calculateTodayPosition, evaluatePurchase } from "./evaluate-purchase";
 export type {
   DecisionInputs,
   DecisionResult,
   EvaluatePurchaseInput,
   PlannedPurchase,
+  TodayPosition,
 } from "./evaluate-purchase";

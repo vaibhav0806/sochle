@@ -1,6 +1,6 @@
 import "server-only";
 
-import { createSochleDatabase, FinancialRepository } from "@sochle/db";
+import { createSochleDatabase, DecisionRepository, FinancialRepository } from "@sochle/db";
 
 import { getServerEnv } from "./env";
 
@@ -13,4 +13,11 @@ export function getRepository(): FinancialRepository | null {
   if (serverEnv.DATABASE_URL === undefined) return null;
   globalDatabase.sochleDatabase ??= createSochleDatabase(serverEnv.DATABASE_URL);
   return new FinancialRepository(globalDatabase.sochleDatabase.db);
+}
+
+export function getDecisionRepository(): DecisionRepository | null {
+  const serverEnv = getServerEnv();
+  if (serverEnv.DATABASE_URL === undefined) return null;
+  globalDatabase.sochleDatabase ??= createSochleDatabase(serverEnv.DATABASE_URL);
+  return new DecisionRepository(globalDatabase.sochleDatabase.db);
 }
