@@ -202,4 +202,11 @@ describe("decision service", () => {
       new DecisionPrerequisiteError("rules")
     );
   });
+
+  it("does not require decision prerequisites when there is nothing to recalculate", async () => {
+    const connection = await financialRepository.ensureConnection("fold");
+    await expect(service.recalculateLatestDecisions(connection.id, evaluatedAt)).resolves.toEqual(
+      []
+    );
+  });
 });

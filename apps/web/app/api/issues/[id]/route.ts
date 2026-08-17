@@ -3,7 +3,10 @@ import { z } from "zod";
 
 import { isOwnerAuthenticated } from "../../../../lib/server/auth";
 import { getDecisionRepository, getRepository } from "../../../../lib/server/database";
-import { createDecisionService } from "../../../../lib/server/decision-service";
+import {
+  createDecisionService,
+  DecisionPrerequisiteError,
+} from "../../../../lib/server/decision-service";
 import { getServerEnv } from "../../../../lib/server/env";
 
 const resolutionSchema = z.discriminatedUnion("action", [
@@ -39,9 +42,18 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   if (issue === null || issue.status !== "open")
     return new Response("Open issue not found", { status: 404 });
   await repository.resolveIssue(id, parsed.data);
-  await createDecisionService(repository, decisionRepository).recalculateLatestDecisions(
-    issue.connectionId,
-    new Date().toISOString()
-  );
+  try {
+    await createDecisionService(repository, decisionRepository).recalculateLatestDecisions(
+      issue.connectionId,
+      new Date().toISOString()
+    );
+  } catch (error) {
+    if (
+      !(error instanceof DecisionPrerequisiteError) &&
+      !(error instanceof Error && error.message.startsWith("Missing decision prerequisite:"))
+    ) {
+      throw error;
+    }
+  }
   return NextResponse.redirect(new URL("/money-inbox", getServerEnv().SOCHLE_APP_URL), 303);
 }

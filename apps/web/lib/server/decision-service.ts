@@ -122,8 +122,9 @@ export function createDecisionService(
     },
 
     async recalculateLatestDecisions(connectionId: string, evaluatedAt: string) {
-      const { issues, plannedPurchases, ruleSet, snapshot } = await loadPrerequisites(connectionId);
       const rows = await decisionRepository.listDecisions(connectionId);
+      if (rows.length === 0) return [];
+      const { issues, plannedPurchases, ruleSet, snapshot } = await loadPrerequisites(connectionId);
       const recalculated = [];
       for (const { decision, intent } of rows) {
         const result = evaluatePurchase({

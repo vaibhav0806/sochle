@@ -104,6 +104,11 @@ test("Today and history expose the stored decision evidence", async ({ page }) =
   await page.reload();
   await expect(page.getByLabel("Purchase status")).toHaveValue("planned");
   await expect(page.getByLabel("Planned for")).toHaveValue(plannedFor);
+
+  await page.goto("/weekly-review");
+  await expect(page.getByRole("heading", { name: "Weekly review" })).toBeVisible();
+  await expect(page.getByText("Delayed or planned")).toBeVisible();
+  await expect(page.getByText("Dogfooding progress")).toBeVisible();
 });
 
 test("owner exports then deletes every local record", async ({ page }) => {
