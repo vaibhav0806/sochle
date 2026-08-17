@@ -268,20 +268,20 @@ interface CommerceAdapter {
 
 ### Work
 
-- [ ] Restrict Manifest V3 host permissions to Amazon India, Flipkart, Myntra, and the configured Sochle API origin.
-- [ ] Implement locale-aware INR parsing using integer minor units; reject crossed-out MRP when a current sale price exists.
-- [ ] Implement Amazon India extraction against saved product-page variants.
-- [ ] Implement Flipkart extraction against saved product-page variants.
-- [ ] Implement Myntra extraction against saved product-page variants.
-- [ ] Observe dynamic page changes without repeatedly injecting controls or issuing calculations.
-- [ ] Add a passive, dismissible Sochle control for products at or above the configured threshold.
-- [ ] Add manual title and price correction before evaluation.
-- [ ] Define authenticated extension-to-API messaging that sends product context and receives only the minimum decision-card payload.
-- [ ] Build collapsed, expanded, loading, stale, low-confidence, unavailable, and error states for the decision card.
-- [ ] Add save and outcome actions for `waiting`, `bought`, `skipped`, and `not_relevant`.
-- [ ] Link the card to the full immutable decision detail in the web app.
-- [ ] Add DOM fixture tests for sale price versus MRP, multiple sellers, comma formatting, missing prices, and dynamic updates.
-- [ ] Add an end-to-end test from a local commerce fixture through evaluation to a persisted decision.
+- [x] Restrict Manifest V3 host permissions to Amazon India, Flipkart, Myntra, and the configured Sochle API origin.
+- [x] Implement locale-aware INR parsing using integer minor units; reject crossed-out MRP when a current sale price exists.
+- [x] Implement Amazon India extraction against saved product-page variants.
+- [x] Implement Flipkart extraction against saved product-page variants.
+- [x] Implement Myntra extraction against saved product-page variants.
+- [x] Observe dynamic page changes without repeatedly injecting controls or issuing calculations.
+- [x] Add a passive, dismissible Sochle control for products at or above the configured threshold.
+- [x] Add manual title and price correction before evaluation.
+- [x] Define authenticated extension-to-API messaging that sends product context and receives only the minimum decision-card payload.
+- [x] Build collapsed, expanded, loading, stale, low-confidence, unavailable, and error states for the decision card.
+- [x] Add save and outcome actions for `waiting`, `bought`, `skipped`, and `not_relevant`.
+- [x] Link the card to the full immutable decision detail in the web app.
+- [x] Add DOM fixture tests for sale price versus MRP, multiple sellers, comma formatting, missing prices, and dynamic updates.
+- [x] Add an end-to-end test from a local commerce fixture through evaluation to a persisted decision.
 
 **Verification:** Automated extraction fixtures pass for all three merchants, content scripts contain no Fold credentials or full financial snapshots, and extension permissions contain no unrelated hosts.
 

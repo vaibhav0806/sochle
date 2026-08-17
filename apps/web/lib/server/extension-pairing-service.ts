@@ -17,7 +17,8 @@ type PairingServiceOptions = {
 };
 
 function safePairing(pairing: ExtensionPairingRow) {
-  const { credentialHash: _credentialHash, ...safe } = pairing;
+  const { credentialHash, ...safe } = pairing;
+  void credentialHash;
   return safe;
 }
 

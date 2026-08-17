@@ -114,12 +114,8 @@
           "name": "financial_accounts_connection_id_connections_id_fk",
           "tableFrom": "financial_accounts",
           "tableTo": "connections",
-          "columnsFrom": [
-            "connection_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["connection_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -187,12 +183,8 @@
           "name": "audit_events_connection_id_connections_id_fk",
           "tableFrom": "audit_events",
           "tableTo": "connections",
-          "columnsFrom": [
-            "connection_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["connection_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -355,12 +347,8 @@
           "name": "corrections_issue_id_data_issues_id_fk",
           "tableFrom": "corrections",
           "tableTo": "data_issues",
-          "columnsFrom": [
-            "issue_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["issue_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -459,12 +447,8 @@
           "name": "data_issues_connection_id_connections_id_fk",
           "tableFrom": "data_issues",
           "tableTo": "connections",
-          "columnsFrom": [
-            "connection_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["connection_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -472,12 +456,8 @@
           "name": "data_issues_snapshot_id_financial_snapshots_id_fk",
           "tableFrom": "data_issues",
           "tableTo": "financial_snapshots",
-          "columnsFrom": [
-            "snapshot_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["snapshot_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -610,12 +590,8 @@
           "name": "decisions_connection_id_connections_id_fk",
           "tableFrom": "decisions",
           "tableTo": "connections",
-          "columnsFrom": [
-            "connection_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["connection_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -623,12 +599,8 @@
           "name": "decisions_purchase_intent_id_purchase_intents_id_fk",
           "tableFrom": "decisions",
           "tableTo": "purchase_intents",
-          "columnsFrom": [
-            "purchase_intent_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["purchase_intent_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -636,12 +608,8 @@
           "name": "decisions_snapshot_id_financial_snapshots_id_fk",
           "tableFrom": "decisions",
           "tableTo": "financial_snapshots",
-          "columnsFrom": [
-            "snapshot_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["snapshot_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -649,12 +617,8 @@
           "name": "decisions_rule_set_id_rule_sets_id_fk",
           "tableFrom": "decisions",
           "tableTo": "rule_sets",
-          "columnsFrom": [
-            "rule_set_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["rule_set_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -662,12 +626,8 @@
           "name": "decisions_previous_decision_id_decisions_id_fk",
           "tableFrom": "decisions",
           "tableTo": "decisions",
-          "columnsFrom": [
-            "previous_decision_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["previous_decision_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -871,12 +831,8 @@
           "name": "extension_pairings_connection_id_connections_id_fk",
           "tableFrom": "extension_pairings",
           "tableTo": "connections",
-          "columnsFrom": [
-            "connection_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["connection_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1039,12 +995,8 @@
           "name": "purchase_intents_connection_id_connections_id_fk",
           "tableFrom": "purchase_intents",
           "tableTo": "connections",
-          "columnsFrom": [
-            "connection_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["connection_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1052,12 +1004,8 @@
           "name": "purchase_intents_pairing_id_extension_pairings_id_fk",
           "tableFrom": "purchase_intents",
           "tableTo": "extension_pairings",
-          "columnsFrom": [
-            "pairing_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["pairing_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -1133,12 +1081,8 @@
           "name": "rule_sets_connection_id_connections_id_fk",
           "tableFrom": "rule_sets",
           "tableTo": "connections",
-          "columnsFrom": [
-            "connection_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["connection_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1198,12 +1142,8 @@
           "name": "financial_snapshots_connection_id_connections_id_fk",
           "tableFrom": "financial_snapshots",
           "tableTo": "connections",
-          "columnsFrom": [
-            "connection_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["connection_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1281,12 +1221,8 @@
           "name": "sync_runs_connection_id_connections_id_fk",
           "tableFrom": "sync_runs",
           "tableTo": "connections",
-          "columnsFrom": [
-            "connection_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["connection_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1428,12 +1364,8 @@
           "name": "normalized_transactions_connection_id_connections_id_fk",
           "tableFrom": "normalized_transactions",
           "tableTo": "connections",
-          "columnsFrom": [
-            "connection_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["connection_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1441,12 +1373,8 @@
           "name": "normalized_transactions_account_id_financial_accounts_id_fk",
           "tableFrom": "normalized_transactions",
           "tableTo": "financial_accounts",
-          "columnsFrom": [
-            "account_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["account_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1462,19 +1390,12 @@
     "public.account_status": {
       "name": "account_status",
       "schema": "public",
-      "values": [
-        "active",
-        "pending",
-        "excluded"
-      ]
+      "values": ["active", "pending", "excluded"]
     },
     "public.account_type": {
       "name": "account_type",
       "schema": "public",
-      "values": [
-        "bank",
-        "credit_card"
-      ]
+      "values": ["bank", "credit_card"]
     },
     "public.audit_event_type": {
       "name": "audit_event_type",
@@ -1492,47 +1413,27 @@
     "public.cash_flow_inclusion": {
       "name": "cash_flow_inclusion",
       "schema": "public",
-      "values": [
-        "included",
-        "excluded"
-      ]
+      "values": ["included", "excluded"]
     },
     "public.commerce_merchant": {
       "name": "commerce_merchant",
       "schema": "public",
-      "values": [
-        "amazon.in",
-        "flipkart.com",
-        "myntra.com"
-      ]
+      "values": ["amazon.in", "flipkart.com", "myntra.com"]
     },
     "public.connection_status": {
       "name": "connection_status",
       "schema": "public",
-      "values": [
-        "disconnected",
-        "authorizing",
-        "connected",
-        "error"
-      ]
+      "values": ["disconnected", "authorizing", "connected", "error"]
     },
     "public.correction_action": {
       "name": "correction_action",
       "schema": "public",
-      "values": [
-        "classify",
-        "exclude",
-        "ignore_once"
-      ]
+      "values": ["classify", "exclude", "ignore_once"]
     },
     "public.data_confidence": {
       "name": "data_confidence",
       "schema": "public",
-      "values": [
-        "high",
-        "medium",
-        "low"
-      ]
+      "values": ["high", "medium", "low"]
     },
     "public.decision_verdict": {
       "name": "decision_verdict",
@@ -1562,49 +1463,27 @@
     "public.issue_severity": {
       "name": "issue_severity",
       "schema": "public",
-      "values": [
-        "info",
-        "warning",
-        "blocking"
-      ]
+      "values": ["info", "warning", "blocking"]
     },
     "public.issue_status": {
       "name": "issue_status",
       "schema": "public",
-      "values": [
-        "open",
-        "resolved",
-        "ignored"
-      ]
+      "values": ["open", "resolved", "ignored"]
     },
     "public.purchase_intent_source": {
       "name": "purchase_intent_source",
       "schema": "public",
-      "values": [
-        "manual",
-        "extension"
-      ]
+      "values": ["manual", "extension"]
     },
     "public.purchase_intent_status": {
       "name": "purchase_intent_status",
       "schema": "public",
-      "values": [
-        "considering",
-        "waiting",
-        "planned",
-        "purchased",
-        "skipped",
-        "not_relevant"
-      ]
+      "values": ["considering", "waiting", "planned", "purchased", "skipped", "not_relevant"]
     },
     "public.sync_status": {
       "name": "sync_status",
       "schema": "public",
-      "values": [
-        "running",
-        "succeeded",
-        "failed"
-      ]
+      "values": ["running", "succeeded", "failed"]
     },
     "public.transaction_classification": {
       "name": "transaction_classification",
@@ -1623,10 +1502,7 @@
     "public.transaction_direction": {
       "name": "transaction_direction",
       "schema": "public",
-      "values": [
-        "credit",
-        "debit"
-      ]
+      "values": ["credit", "debit"]
     }
   },
   "schemas": {},

@@ -55,7 +55,10 @@ test("a paired extension evaluates a product and records an outcome", async () =
     await popup.goto(`${extensionOrigin}/popup.html`);
     await popup.evaluate(
       async ({ credential, key }) => {
-        await browser.storage.local.set({ [key]: credential });
+        const extension = globalThis as unknown as {
+          browser: { storage: { local: { set(values: Record<string, string>): Promise<void> } } };
+        };
+        await extension.browser.storage.local.set({ [key]: credential });
       },
       { credential: rawCredential, key: credentialKey }
     );

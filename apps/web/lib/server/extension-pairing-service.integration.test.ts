@@ -131,7 +131,7 @@ describe("extension pairing service", () => {
   });
 
   it("supports owner and current-pairing revocation", async () => {
-    const { connection } = await createAndApprove();
+    await createAndApprove();
     const pairing = (await service().authenticateRequest(
       authenticatedRequest()
     )) as ExtensionPairingRow;

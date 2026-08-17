@@ -53,7 +53,7 @@ See [docs/TESTING.md](docs/TESTING.md) for the test layers and milestone complet
 
 ## Current status
 
-Milestones 0 and 1 are implemented. The next build phase is Milestone 2: the deterministic decision core.
+Milestones 0–3 are implemented and covered by automated unit, integration, build-security, and Chromium E2E tests. A private live smoke check on current Amazon India, Flipkart, and Myntra pages remains required before extension distribution.
 
 ## Local development
 
@@ -77,6 +77,7 @@ pnpm test:unit
 pnpm test:integration
 pnpm test:coverage
 pnpm build
+pnpm test:extension-security
 pnpm e2e
 ```
 

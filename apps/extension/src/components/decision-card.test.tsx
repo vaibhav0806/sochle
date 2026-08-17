@@ -4,10 +4,9 @@ import type {
   ExtensionDecisionCard,
   ExtensionSession,
   ExtractedProduct,
-  ProductDecisionRequest,
   PurchaseOutcome,
 } from "@sochle/contracts/browser";
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { DecisionCard } from "./decision-card";
@@ -47,7 +46,7 @@ afterEach(cleanup);
 
 function props(overrides: Partial<Parameters<typeof DecisionCard>[0]> = {}) {
   return {
-    onEvaluate: vi.fn(async (_request: ProductDecisionRequest) => result),
+    onEvaluate: vi.fn(async () => result),
     onOpenApp: vi.fn(),
     onOutcome: vi.fn(async (_intentId: string, outcome: PurchaseOutcome) => ({ status: outcome })),
     product,

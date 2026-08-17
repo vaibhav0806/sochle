@@ -68,7 +68,9 @@ beforeEach(() => {
   scheduled = [];
   renderCard = vi.fn();
   sendMessage = vi.fn(async (message) =>
-    typeof message === "object" && message !== null && Reflect.get(message, "operation") === "getSession"
+    typeof message === "object" &&
+    message !== null &&
+    Reflect.get(message, "operation") === "getSession"
       ? paired
       : { status: "waiting" }
   );

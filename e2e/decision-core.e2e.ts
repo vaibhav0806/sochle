@@ -111,7 +111,7 @@ test("owner exports then deletes every local record", async ({ page }) => {
   const exportResponse = await page.request.get("/api/export");
   expect(exportResponse.status()).toBe(200);
   expect(exportResponse.headers()["content-disposition"]).toContain("attachment");
-  expect(await exportResponse.json()).toMatchObject({ schemaVersion: 1 });
+  expect(await exportResponse.json()).toMatchObject({ schemaVersion: 2 });
 
   const rejected = await page.request.post("/api/delete", {
     form: { confirmation: "delete" },

@@ -102,3 +102,15 @@ Real Fold OAuth remains an external verification gate because CI must not posses
 | Cached performance                         | 1,000 pure reference evaluations must complete in under 1 second                                                                                                                                                                        | Cached PostgreSQL snapshot-to-persisted-decision path must complete in under 5 seconds                                                  | Production build and browser journey exercise the cached path                               |
 
 Real owner-authorized Fold OAuth and remote authorization revocation remain manual external verification. CI validates local OAuth state handling, encryption, callback/session boundaries, synthetic MCP transport, and complete local credential/data deletion without possessing personal financial credentials.
+
+## Milestone 3 point-of-purchase matrix
+
+| Capability                                | Unit / integration                                                 | E2E / build                                                       |
+| ----------------------------------------- | ------------------------------------------------------------------ | ----------------------------------------------------------------- |
+| Pairing, CORS, revocation                 | Extension auth, pairing service, and route integration tests       | Paired Chromium extension session                                 |
+| Amazon India, Flipkart, Myntra extraction | Sanitized sale, conflict, missing-price, and dynamic DOM fixtures  | Amazon synthetic product journey                                  |
+| Card interaction and outcomes             | Card/content runtime tests; decision and outcome integration tests | Calculate, save `waiting`, and persist through the production API |
+| Persistence, export, deletion             | Decision repository and owner-deletion integration tests           | Covered by authenticated web routes in existing E2E               |
+| Permission and payload boundaries         | Exact manifest permission test                                     | `pnpm test:extension-security` scans the built bundle             |
+
+Manual external verification still required before distributing the extension: load the production build and smoke-test one current product page on each supported merchant. Record only pass/fail results and never retain page dumps or financial data.
