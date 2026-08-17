@@ -49,6 +49,7 @@ The planned stack is TypeScript, pnpm workspaces, Next.js, WXT, PostgreSQL, Driz
 | 5. Closed loop          | Receipts, transactions, refunds, and predicted-versus-actual impact   |
 
 See [MILESTONES.md](MILESTONES.md) for the implementation sequence and [SOCHLE_PRD.md](SOCHLE_PRD.md) for the complete product requirements.
+See [docs/TESTING.md](docs/TESTING.md) for the test layers and milestone completion gate.
 
 ## Current status
 
@@ -60,6 +61,7 @@ Requirements: Node.js 24+, pnpm 10+, and Docker.
 
 ```bash
 pnpm install
+pnpm exec playwright install chromium
 cp .env.example .env
 docker compose up -d postgres
 pnpm dev
@@ -71,8 +73,11 @@ Before pushing changes, run:
 pnpm format:check
 pnpm lint
 pnpm typecheck
-pnpm test
+pnpm test:unit
+pnpm test:integration
+pnpm test:coverage
 pnpm build
+pnpm e2e
 ```
 
 ## Fold usage and distribution

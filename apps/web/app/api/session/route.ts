@@ -14,10 +14,10 @@ export async function POST(request: Request) {
     serverEnv.SOCHLE_SESSION_SECRET === undefined ||
     !verifyOwnerPassword(password, serverEnv.SOCHLE_OWNER_PASSWORD)
   ) {
-    return NextResponse.redirect(new URL("/login?error=invalid", request.url), 303);
+    return NextResponse.redirect(new URL("/login?error=invalid", serverEnv.SOCHLE_APP_URL), 303);
   }
 
-  const response = NextResponse.redirect(new URL("/connections", request.url), 303);
+  const response = NextResponse.redirect(new URL("/connections", serverEnv.SOCHLE_APP_URL), 303);
   response.cookies.set(
     ownerSessionCookie,
     createOwnerSession(serverEnv.SOCHLE_SESSION_SECRET, new Date(), 12 * 60 * 60),
@@ -32,8 +32,8 @@ export async function POST(request: Request) {
   return response;
 }
 
-export async function DELETE(request: Request) {
-  const response = NextResponse.redirect(new URL("/login", request.url), 303);
+export async function DELETE() {
+  const response = NextResponse.redirect(new URL("/login", getServerEnv().SOCHLE_APP_URL), 303);
   response.cookies.delete(ownerSessionCookie);
   return response;
 }

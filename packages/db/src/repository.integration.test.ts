@@ -50,6 +50,24 @@ const snapshot: NormalizedFinancialState = {
   upcomingObligations: [],
 };
 
+async function createOpenIssue() {
+  const connection = await repository.ensureConnection("fold");
+  await repository.persistProjection(connection.id, snapshot);
+  const savedSnapshot = await repository.saveSnapshot(connection.id, snapshot, "issue-snapshot");
+  const [issue] = await repository.replaceOpenIssues(connection.id, savedSnapshot.id, [
+    {
+      details: { merchant: "Demo Store" },
+      materialityMinor: 650_000,
+      relatedEntityId: "demo_transaction_1",
+      relatedEntityType: "transaction",
+      severity: "blocking",
+      type: "large_untagged_transaction",
+    },
+  ]);
+  if (issue === undefined) throw new Error("Expected issue");
+  return { connection, issue, savedSnapshot };
+}
+
 beforeEach(async () => {
   await database.db.delete(connections);
 });
@@ -59,6 +77,16 @@ afterAll(async () => {
 });
 
 describe("FinancialRepository", () => {
+  it("returns null for provider state that has not been stored", async () => {
+    const connection = await repository.ensureConnection("fold");
+
+    await expect(repository.getConnection("missing-provider")).resolves.toBeNull();
+    await expect(
+      repository.loadAuthorizationState(connection.id, randomBytes(32))
+    ).resolves.toBeNull();
+    await expect(repository.getIssue("00000000-0000-0000-0000-000000000000")).resolves.toBeNull();
+  });
+
   it("reads and updates a provider connection", async () => {
     const connection = await repository.ensureConnection("fold");
 
@@ -180,20 +208,7 @@ describe("FinancialRepository", () => {
   });
 
   it("persists Money Inbox corrections across later provider projections", async () => {
-    const connection = await repository.ensureConnection("fold");
-    await repository.persistProjection(connection.id, snapshot);
-    const savedSnapshot = await repository.saveSnapshot(connection.id, snapshot, "issue-snapshot");
-    const [issue] = await repository.replaceOpenIssues(connection.id, savedSnapshot.id, [
-      {
-        details: { merchant: "Demo Store" },
-        materialityMinor: 650_000,
-        relatedEntityId: "demo_transaction_1",
-        relatedEntityType: "transaction",
-        severity: "blocking",
-        type: "large_untagged_transaction",
-      },
-    ]);
-    if (issue === undefined) throw new Error("Expected issue");
+    const { connection, issue } = await createOpenIssue();
 
     await repository.resolveIssue(issue.id, {
       action: "classify",
@@ -207,5 +222,41 @@ describe("FinancialRepository", () => {
       .where(eq(normalizedTransactions.sourceTransactionId, "demo_transaction_1"));
     expect(transaction?.sochleClassification).toBe("consumption");
     await expect(repository.listOpenIssues(connection.id)).resolves.toEqual([]);
+  });
+
+  it("persists exclusion corrections across later provider projections", async () => {
+    const { connection, issue } = await createOpenIssue();
+
+    await repository.resolveIssue(issue.id, { action: "exclude" });
+    await repository.persistProjection(connection.id, snapshot);
+
+    const [transaction] = await database.db
+      .select()
+      .from(normalizedTransactions)
+      .where(eq(normalizedTransactions.sourceTransactionId, "demo_transaction_1"));
+    expect(transaction?.cashFlowInclusion).toBe("excluded");
+    await expect(repository.getIssue(issue.id)).resolves.toMatchObject({ status: "resolved" });
+  });
+
+  it("marks ignore-once corrections as ignored without changing the transaction", async () => {
+    const { issue } = await createOpenIssue();
+
+    await repository.resolveIssue(issue.id, { action: "ignore_once" });
+
+    const [transaction] = await database.db
+      .select()
+      .from(normalizedTransactions)
+      .where(eq(normalizedTransactions.sourceTransactionId, "demo_transaction_1"));
+    expect(transaction?.sochleClassification).toBe("unclassified");
+    await expect(repository.getIssue(issue.id)).resolves.toMatchObject({ status: "ignored" });
+  });
+
+  it("replaces the previous open review set atomically", async () => {
+    const { connection, issue, savedSnapshot } = await createOpenIssue();
+
+    await repository.replaceOpenIssues(connection.id, savedSnapshot.id, []);
+
+    await expect(repository.listOpenIssues(connection.id)).resolves.toEqual([]);
+    await expect(repository.getIssue(issue.id)).resolves.toMatchObject({ status: "resolved" });
   });
 });

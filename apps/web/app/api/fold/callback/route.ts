@@ -2,10 +2,13 @@ import { NextResponse } from "next/server";
 
 import { isOwnerAuthenticated } from "../../../../lib/server/auth";
 import { getRepository } from "../../../../lib/server/database";
+import { getServerEnv } from "../../../../lib/server/env";
 import { createFoldSession } from "../../../../lib/server/fold";
 
 export async function GET(request: Request) {
-  if (!(await isOwnerAuthenticated())) return NextResponse.redirect(new URL("/login", request.url));
+  if (!(await isOwnerAuthenticated())) {
+    return NextResponse.redirect(new URL("/login", getServerEnv().SOCHLE_APP_URL));
+  }
   const repository = getRepository();
   if (repository === null) return new Response("Live data is disabled", { status: 503 });
   const connection = await repository.ensureConnection("fold");
@@ -17,7 +20,9 @@ export async function GET(request: Request) {
     await session.finishAuth(params);
     await session.connect();
     await repository.setConnectionStatus(connection.id, "connected");
-    return NextResponse.redirect(new URL("/connections?result=connected", request.url));
+    return NextResponse.redirect(
+      new URL("/connections?result=connected", getServerEnv().SOCHLE_APP_URL)
+    );
   } catch (error) {
     await repository.setConnectionStatus(connection.id, "error");
     throw error;

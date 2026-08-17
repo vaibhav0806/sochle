@@ -26,6 +26,15 @@ describe("owner session", () => {
     ).toBe(false);
   });
 
+  it("rejects malformed session shapes and non-numeric expiries", () => {
+    const now = new Date("2026-08-17T06:00:00Z");
+
+    expect(verifyOwnerSession("", "demo-session-secret", now)).toBe(false);
+    expect(verifyOwnerSession("v2.9999999999.signature", "demo-session-secret", now)).toBe(false);
+    expect(verifyOwnerSession("v1.not-a-number.signature", "demo-session-secret", now)).toBe(false);
+    expect(verifyOwnerSession("v1.9999999999.short", "demo-session-secret", now)).toBe(false);
+  });
+
   it("compares the configured owner password without early string comparison", () => {
     expect(verifyOwnerPassword("correct horse", "correct horse")).toBe(true);
     expect(verifyOwnerPassword("wrong horse", "correct horse")).toBe(false);

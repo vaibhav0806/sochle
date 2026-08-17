@@ -61,4 +61,40 @@ describe("FoldOAuthProvider", () => {
 
     expect(redirectedTo).toBe("https://auth.fold.money/authorize?client=demo");
   });
+
+  it("stores client registrations and tokens by issuer", async () => {
+    const store = memoryStore();
+    const provider = new FoldOAuthProvider({
+      onRedirect() {},
+      redirectUrl: "http://localhost:3000/api/fold/callback",
+      store,
+    });
+    const issuer = { issuer: "https://auth.fold.money" };
+    const client = { client_id: "synthetic-client" };
+    const tokens: StoredOAuthTokens = { access_token: "synthetic-access", token_type: "Bearer" };
+
+    await provider.saveClientInformation(client, issuer);
+    await provider.saveTokens(tokens, issuer);
+
+    await expect(provider.clientInformation(issuer)).resolves.toEqual(client);
+    await expect(provider.clientInformation()).resolves.toEqual(client);
+    await expect(provider.tokens(issuer)).resolves.toEqual(tokens);
+  });
+
+  it("rejects stateful values that cannot be safely restored", async () => {
+    const provider = new FoldOAuthProvider({
+      onRedirect() {},
+      redirectUrl: "http://localhost:3000/api/fold/callback",
+      store: memoryStore(),
+    });
+
+    await expect(provider.codeVerifier()).rejects.toThrow("OAuth code verifier is missing");
+    await expect(provider.consumeState(null)).rejects.toThrow("OAuth state mismatch");
+    await expect(provider.saveClientInformation({ client_id: "synthetic-client" })).rejects.toThrow(
+      "OAuth issuer is required"
+    );
+    await expect(
+      provider.saveTokens({ access_token: "synthetic-access", token_type: "Bearer" })
+    ).rejects.toThrow("OAuth issuer is required");
+  });
 });

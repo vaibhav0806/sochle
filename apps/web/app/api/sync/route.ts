@@ -13,7 +13,10 @@ export async function POST(request: Request) {
   if (repository === null) return new Response("Live data is disabled", { status: 503 });
   const connection = await repository.getConnection("fold");
   if (connection === null || connection.status !== "connected") {
-    return NextResponse.redirect(new URL("/connections?result=connect_first", request.url), 303);
+    return NextResponse.redirect(
+      new URL("/connections?result=connect_first", serverEnv.SOCHLE_APP_URL),
+      303
+    );
   }
 
   const { session } = createFoldSession(repository, connection.id, () => undefined);
@@ -33,7 +36,10 @@ export async function POST(request: Request) {
     if (new URL(request.url).searchParams.get("automatic") === "1") {
       return NextResponse.json({ result: detail });
     }
-    return NextResponse.redirect(new URL(`/connections?result=${detail}`, request.url), 303);
+    return NextResponse.redirect(
+      new URL(`/connections?result=${detail}`, serverEnv.SOCHLE_APP_URL),
+      303
+    );
   } finally {
     await session.close().catch(() => undefined);
   }

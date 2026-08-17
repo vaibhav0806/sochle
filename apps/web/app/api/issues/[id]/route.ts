@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import { isOwnerAuthenticated } from "../../../../lib/server/auth";
 import { getRepository } from "../../../../lib/server/database";
+import { getServerEnv } from "../../../../lib/server/env";
 
 const resolutionSchema = z.discriminatedUnion("action", [
   z.object({
@@ -32,5 +33,5 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   if (!parsed.success) return new Response("Invalid resolution", { status: 400 });
   const { id } = await params;
   await repository.resolveIssue(id, parsed.data);
-  return NextResponse.redirect(new URL("/money-inbox", request.url), 303);
+  return NextResponse.redirect(new URL("/money-inbox", getServerEnv().SOCHLE_APP_URL), 303);
 }

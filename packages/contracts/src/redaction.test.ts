@@ -40,4 +40,20 @@ describe("redactFinancialData", () => {
     });
     expect(source.totalBalance).toBe(90_000);
   });
+
+  it("preserves safe primitive and array structure while redacting nested values", () => {
+    expect(
+      redactFinancialData({
+        attempts: 2,
+        connected: true,
+        event: "sync_attempted",
+        items: [{ accountId: "private-id", status: "fresh" }, null],
+      })
+    ).toEqual({
+      attempts: 2,
+      connected: true,
+      event: "sync_attempted",
+      items: [{ accountId: "[REDACTED]", status: "fresh" }, null],
+    });
+  });
 });

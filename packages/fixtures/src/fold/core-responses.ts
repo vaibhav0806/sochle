@@ -122,6 +122,21 @@ export const foldCoreResponses = {
     liabilities: [],
     total: 230000.25,
   },
+  netWorthHistory: {
+    currency: "INR",
+    end_date: "2026-08-17",
+    graph_data: [{ date: "2026-08-17", value: 500000 }],
+    per_class_graph_data: null,
+    range: "3m",
+    start_date: "2026-05-17",
+    summary: {
+      change_percent: 0,
+      change_value: 0,
+      end_total: 500000,
+      per_class: null,
+      start_total: 500000,
+    },
+  },
   recurringExpenses: {
     expenses: [
       {

@@ -10,16 +10,25 @@
   "scripts": {
     "build": "pnpm --recursive --if-present run build",
     "dev": "pnpm --parallel --filter @sochle/web --filter @sochle/extension run dev",
+    "e2e": "playwright test",
+    "e2e:ui": "playwright test --ui",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "eslint .",
     "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:integration": "vitest run --project integration",
+    "test:unit": "vitest run --project unit",
     "test:watch": "vitest",
-    "typecheck": "pnpm --recursive --if-present run typecheck"
+    "typecheck": "pnpm --recursive --if-present run typecheck && tsc -p tsconfig.tests.json"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",
+    "@playwright/test": "^1.62.1",
+    "@sochle/db": "workspace:*",
+    "@sochle/domain": "workspace:*",
     "@types/node": "^24.10.1",
+    "@vitest/coverage-v8": "^4.1.10",
     "eslint": "^9.39.2",
     "prettier": "^3.7.4",
     "typescript": "^5.9.3",

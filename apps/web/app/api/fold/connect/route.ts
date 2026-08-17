@@ -2,9 +2,10 @@ import { NextResponse } from "next/server";
 
 import { isOwnerAuthenticated } from "../../../../lib/server/auth";
 import { getRepository } from "../../../../lib/server/database";
+import { getServerEnv } from "../../../../lib/server/env";
 import { createFoldSession } from "../../../../lib/server/fold";
 
-export async function POST(request: Request) {
+export async function POST() {
   if (!(await isOwnerAuthenticated())) return new Response("Unauthorized", { status: 401 });
   const repository = getRepository();
   if (repository === null) return new Response("Live data is disabled", { status: 503 });
@@ -19,7 +20,7 @@ export async function POST(request: Request) {
     await session.connect();
     await repository.setConnectionStatus(connection.id, "connected");
     return NextResponse.redirect(
-      new URL("/connections?result=already_connected", request.url),
+      new URL("/connections?result=already_connected", getServerEnv().SOCHLE_APP_URL),
       303
     );
   } catch (error) {

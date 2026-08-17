@@ -28,4 +28,10 @@ describe("authorization encryption", () => {
       "Authorization encryption key must be 32 bytes"
     );
   });
+
+  it("rejects decryption with the wrong key", () => {
+    const encrypted = encryptAuthorization("fold-secret", randomBytes(32));
+
+    expect(() => decryptAuthorization(encrypted, randomBytes(32))).toThrow();
+  });
 });

@@ -1,0 +1,15 @@
+import { expect, test } from "@playwright/test";
+
+test("synthetic demo exposes the data surfaces without credentials", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.getByRole("heading", { name: "सोचle." })).toBeVisible();
+
+  await page.getByRole("link", { name: "Set up financial data" }).click();
+  await expect(page).toHaveURL(/\/connections$/);
+  await expect(page.getByText("Demo mode is on")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Connect Fold" })).toHaveCount(0);
+
+  await page.getByRole("link", { name: /Open Money Inbox/ }).click();
+  await expect(page.getByRole("heading", { name: "Money Inbox" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "All clear" })).toBeVisible();
+});

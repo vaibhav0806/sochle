@@ -52,6 +52,41 @@ describe("parseServerEnv", () => {
     ).toThrow("SOCHLE_OWNER_PASSWORD is required outside demo mode");
   });
 
+  it("requires encryption and session secrets independently outside demo mode", () => {
+    const database = "postgresql://sochle:sochle@localhost:65432/sochle";
+    const key = Buffer.alloc(32, 7).toString("base64");
+
+    expect(() =>
+      parseServerEnv({
+        DATABASE_URL: database,
+        SOCHLE_DEMO_MODE: "false",
+      })
+    ).toThrow("SOCHLE_TOKEN_ENCRYPTION_KEY is required outside demo mode");
+    expect(() =>
+      parseServerEnv({
+        DATABASE_URL: database,
+        SOCHLE_DEMO_MODE: "false",
+        SOCHLE_OWNER_PASSWORD: "correct horse battery staple",
+        SOCHLE_TOKEN_ENCRYPTION_KEY: key,
+      })
+    ).toThrow("SOCHLE_SESSION_SECRET is required outside demo mode");
+  });
+
+  it("honors explicit application, callback, and refresh settings", () => {
+    expect(
+      parseServerEnv({
+        SOCHLE_APP_URL: "https://sochle.example",
+        SOCHLE_DEMO_MODE: "true",
+        SOCHLE_FOLD_REDIRECT_URL: "https://sochle.example/custom-callback",
+        SOCHLE_SYNC_MINIMUM_INTERVAL_MINUTES: "15",
+      })
+    ).toMatchObject({
+      SOCHLE_APP_URL: "https://sochle.example",
+      SOCHLE_FOLD_REDIRECT_URL: "https://sochle.example/custom-callback",
+      SOCHLE_SYNC_MINIMUM_INTERVAL_MINUTES: 15,
+    });
+  });
+
   it("rejects an encryption key that is not exactly 32 bytes", () => {
     expect(() =>
       parseServerEnv({

@@ -3,7 +3,7 @@ import { foldCoreResponses } from "@sochle/fixtures";
 import { describe, expect, it } from "vitest";
 
 import { normalizeFoldSnapshot } from "./normalize";
-import { FoldSyncCoordinator } from "./sync";
+import { FoldFinancialProvider, FoldSyncCoordinator } from "./sync";
 import type { SyncRepository } from "./sync";
 
 const state = normalizeFoldSnapshot(foldCoreResponses, "2026-08-17T06:30:00.000Z");
@@ -41,6 +41,25 @@ class MemorySyncRepository implements SyncRepository {
 }
 
 describe("FoldSyncCoordinator", () => {
+  it("normalizes the complete payload returned by the Fold gateway", async () => {
+    const provider = new FoldFinancialProvider(
+      {
+        async fetchSyncPayload() {
+          return {
+            netWorthHistory: foldCoreResponses.netWorthHistory,
+            snapshot: foldCoreResponses,
+          };
+        },
+      } as never,
+      () => new Date("2026-08-17T06:30:00.000Z")
+    );
+
+    await expect(provider.sync()).resolves.toMatchObject({
+      asOf: "2026-08-17T06:30:00.000Z",
+      liquidCash: { currency: "INR", minor: 25_000_025 },
+    });
+  });
+
   it("persists a fresh provider snapshot and completes the sync", async () => {
     const repository = new MemorySyncRepository();
     const provider: FinancialDataProvider = {
@@ -103,5 +122,27 @@ describe("FoldSyncCoordinator", () => {
       status: "cached",
     });
     expect(providerCalls).toBe(0);
+  });
+
+  it("returns unavailable when no cached snapshot exists", async () => {
+    const repository = new MemorySyncRepository();
+    repository.gate = { kind: "running" };
+    const coordinator = new FoldSyncCoordinator(
+      {
+        async sync() {
+          return state;
+        },
+      },
+      repository,
+      {
+        minimumIntervalMs: 60 * 60 * 1000,
+        now: () => new Date("2026-08-17T06:30:00.000Z"),
+      }
+    );
+
+    await expect(coordinator.sync("demo_connection")).resolves.toEqual({
+      reason: "running",
+      status: "unavailable",
+    });
   });
 });
