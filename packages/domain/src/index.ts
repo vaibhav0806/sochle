@@ -48,3 +48,5 @@ export type {
   PlannedPurchase,
   TodayPosition,
 } from "./evaluate-purchase";
+export { buildWeeklyReview } from "./weekly-review";
+export type { WeeklyReview, WeeklyReviewInput, WeeklyReviewOutcome } from "./weekly-review";
