@@ -120,5 +120,33 @@ export function createDecisionService(
         ),
       };
     },
+
+    async recalculateLatestDecisions(connectionId: string, evaluatedAt: string) {
+      const { issues, plannedPurchases, ruleSet, snapshot } = await loadPrerequisites(connectionId);
+      const rows = await decisionRepository.listDecisions(connectionId);
+      const recalculated = [];
+      for (const { decision, intent } of rows) {
+        const result = evaluatePurchase({
+          dataIssues: issues,
+          evaluatedAt,
+          financialState: snapshot.state,
+          plannedPurchases,
+          price: { currency: "INR", minor: intent.priceMinor },
+          rules: ruleSet.rules,
+          snapshotId: snapshot.id,
+        });
+        await decisionRepository.appendDecision({
+          auditBundle: { input: result.inputs, result },
+          connectionId,
+          previousDecisionId: decision.id,
+          purchaseIntentId: intent.id,
+          result,
+          ruleSetId: ruleSet.id,
+          snapshotId: snapshot.id,
+        });
+        recalculated.push({ previousDecisionId: decision.id });
+      }
+      return recalculated;
+    },
   };
 }

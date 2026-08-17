@@ -150,6 +150,26 @@ describe("decision service", () => {
     expect(performance.now() - startedAt).toBeLessThan(5_000);
   });
 
+  it("appends successors without mutating prior decisions after a correction", async () => {
+    const { connection } = await seedPrerequisites();
+    const original = await service.checkPurchase({
+      connectionId: connection.id,
+      description: "Synthetic headphones",
+      evaluatedAt,
+      priceMinor: 45_000_00,
+    });
+
+    const recalculated = await service.recalculateLatestDecisions(connection.id, evaluatedAt);
+
+    expect(recalculated).toEqual([{ previousDecisionId: original.decision.id }]);
+    await expect(
+      decisionRepository.getDecision(connection.id, original.decision.id)
+    ).resolves.toMatchObject({
+      decision: { previousDecisionId: null },
+    });
+    await expect(decisionRepository.listDecisions(connection.id)).resolves.toHaveLength(1);
+  });
+
   it("returns the same pre-purchase goal headroom for Today without creating a decision", async () => {
     const { connection, snapshot } = await seedPrerequisites();
 
