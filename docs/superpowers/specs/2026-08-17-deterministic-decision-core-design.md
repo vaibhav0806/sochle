@@ -212,7 +212,7 @@ The issue threshold is:
 materiality_threshold = min(₹5,000, floor(purchase_price * 1,000 / 10,000))
 ```
 
-The configured cap and ratio replace those defaults. Multiplication and division use integer arithmetic; the threshold rounds down to paise. An issue is material when its maximum possible liquidity effect is greater than or equal to the threshold, or when sensitivity evaluation shows that resolving it can change the financial verdict. Manual purchase prices must be positive, so a zero materiality threshold is not valid for a saved purchase decision.
+The configured cap and ratio replace those defaults. Multiplication and division use integer arithmetic; the threshold rounds down to paise. A small positive purchase can therefore produce a zero-paise threshold, in which case every unresolved issue with a non-zero or unknown effect is material. An issue is otherwise material when its maximum possible liquidity effect is greater than or equal to the threshold, or when sensitivity evaluation shows that resolving it can change the financial verdict. Manual purchase prices must be positive.
 
 Required-source freshness uses the repository defaults: high through 6 hours, medium after 6 and through 24 hours, and low after 24 hours. Boundary timestamps belong to the fresher band.
 
