@@ -1,0 +1,2 @@
+ALTER TABLE "connections" ADD COLUMN "consecutive_failures" integer DEFAULT 0 NOT NULL;--> statement-breakpoint
+CREATE UNIQUE INDEX "sync_runs_one_running_per_connection" ON "sync_runs" USING btree ("connection_id") WHERE "sync_runs"."status" = 'running';

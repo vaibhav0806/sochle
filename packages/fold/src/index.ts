@@ -1,1 +1,12 @@
-export {};
+export { FoldGateway } from "./client";
+export type { FoldMcpToolClient, FoldSyncPayload } from "./client";
+export { detectDataIssues } from "./issues";
+export type { DetectedDataIssue } from "./issues";
+export { FoldOAuthProvider } from "./oauth-provider";
+export type { FoldOAuthState, FoldOAuthStateStore } from "./oauth-provider";
+export { normalizeFoldSnapshot } from "./normalize";
+export { foldSchemas } from "./schemas";
+export type { FoldSnapshotResponses } from "./schemas";
+export { FoldMcpSession } from "./transport";
+export { FoldFinancialProvider, FoldSyncCoordinator } from "./sync";
+export type { SyncRepository, SyncResult } from "./sync";

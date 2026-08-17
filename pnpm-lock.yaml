@@ -104,6 +104,10 @@ importers:
       zod:
         specifier: ^4.3.5
         version: 4.4.3
+    devDependencies:
+      "@sochle/fixtures":
+        specifier: workspace:*
+        version: link:../fixtures
 
 packages:
   "@1natsu/wait-element@4.2.0":

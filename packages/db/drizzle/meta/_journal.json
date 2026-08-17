@@ -8,6 +8,20 @@
       "when": 1786952605646,
       "tag": "0000_foundation",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1786952850920,
+      "tag": "0001_common_thunderball",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1786953585204,
+      "tag": "0002_open_toad",
+      "breakpoints": true
     }
   ]
 }
