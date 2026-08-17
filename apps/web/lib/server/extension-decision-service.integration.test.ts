@@ -164,7 +164,7 @@ describe("extension decision service", () => {
     expect(events.filter((event) => event.type === "decision_created")).toHaveLength(1);
   });
 
-  it("returns stable prerequisite and threshold error codes", async () => {
+  it("returns stable prerequisite errors and permits manual checks below the auto-prompt threshold", async () => {
     const { connection, pairing } = await createPairing();
     await expect(decisionService().evaluate(pairing, product)).rejects.toMatchObject({
       code: "missing_rules",
@@ -179,7 +179,7 @@ describe("extension decision service", () => {
         ...product,
         correctedPrice: { currency: "INR", minor: 9_999_99 },
       })
-    ).rejects.toMatchObject({ code: "below_threshold" });
+    ).resolves.toMatchObject({ priceMinor: 9_999_99 });
   });
 
   it("updates outcomes idempotently and rejects cross-pairing access", async () => {

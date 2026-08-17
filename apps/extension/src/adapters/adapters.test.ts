@@ -201,6 +201,16 @@ function fixtureDocument(merchantDirectory: string, fixture: string, pageUrl: st
 }
 
 describe("merchant adapters", () => {
+  it("extracts the current Amazon desktop price container", () => {
+    const document = fixtureDocument("amazon-in", "primary", "https://www.amazon.in/dp/AMZ001");
+    document.querySelector(".apexPriceToPay")!.className = "reinventPricePriceToPayMargin";
+
+    expect(extractProduct(document, "https://www.amazon.in/dp/AMZ001")).toMatchObject({
+      confidence: "high",
+      price: { currency: "INR", minor: 4_500_000 },
+    });
+  });
+
   it.each(fixtureCases)(
     "extracts $merchantDirectory/$fixture deterministically",
     ({ expected, fixture, merchantDirectory, pageUrl }) => {

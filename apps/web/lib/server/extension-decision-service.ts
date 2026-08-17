@@ -23,7 +23,6 @@ type SavedExtensionDecision = {
 type ExtensionPairing = { connectionId: string; id: string };
 type ExtensionPairingService = ReturnType<typeof createExtensionPairingService>;
 type ExtensionErrorCode =
-  | "below_threshold"
   | "invalid_product"
   | "missing_rules"
   | "missing_snapshot"
@@ -92,13 +91,6 @@ export function createExtensionDecisionService(options: {
       const ruleSet = await options.decisionRepository.getActiveRuleSet(pairing.connectionId);
       if (ruleSet === null) {
         throw new ExtensionDecisionError("missing_rules", "Save decision rules first", 409);
-      }
-      if (input.correctedPrice.minor < ruleSet.rules.largePurchaseThreshold.minor) {
-        throw new ExtensionDecisionError(
-          "below_threshold",
-          "This purchase is below your large-purchase threshold",
-          409
-        );
       }
       try {
         const saved = await core.checkPurchase({

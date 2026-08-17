@@ -7,6 +7,9 @@ const currentPriceSelectors = [
   ".apexPriceToPay .a-offscreen",
   ".priceToPay .a-offscreen",
   "#corePrice_feature_div .a-price:not(.a-text-price) .a-offscreen",
+  "#corePriceDisplay_desktop_feature_div .a-price:not(.a-text-price) .a-offscreen",
+  "#corePriceDisplay_mobile_feature_div .a-price:not(.a-text-price) .a-offscreen",
+  ".reinventPricePriceToPayMargin .a-offscreen",
 ] as const;
 
 export const amazonIndiaAdapter: CommerceAdapter = {
