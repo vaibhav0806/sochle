@@ -219,6 +219,14 @@ button.secondary {
   background: transparent;
   color: #315b42;
 }
+.secondary-link {
+  background: transparent;
+  color: #315b42;
+}
+button.danger {
+  background: #9b2c24;
+  border-color: #9b2c24;
+}
 button.quiet {
   background: transparent;
   border-color: transparent;

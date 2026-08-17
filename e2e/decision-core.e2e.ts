@@ -105,3 +105,33 @@ test("Today and history expose the stored decision evidence", async ({ page }) =
   await expect(page.getByLabel("Purchase status")).toHaveValue("planned");
   await expect(page.getByLabel("Planned for")).toHaveValue(plannedFor);
 });
+
+test("owner exports then deletes every local record", async ({ page }) => {
+  await createReferenceDecision(page);
+  const exportResponse = await page.request.get("/api/export");
+  expect(exportResponse.status()).toBe(200);
+  expect(exportResponse.headers()["content-disposition"]).toContain("attachment");
+  expect(await exportResponse.json()).toMatchObject({ schemaVersion: 1 });
+
+  const rejected = await page.request.post("/api/delete", {
+    form: { confirmation: "delete" },
+  });
+  expect(rejected.status()).toBe(400);
+
+  await page.goto("/today");
+  await page.getByLabel("Type DELETE to confirm").fill("DELETE");
+  await page.getByRole("button", { name: "Delete all my data" }).click();
+  await expect(page).toHaveURL(/\/login\?deleted=1$/);
+});
+
+test("export and deletion reject an anonymous request", async ({ page }) => {
+  expect((await page.request.get("/api/export")).status()).toBe(401);
+  expect(
+    (
+      await page.request.post("/api/delete", {
+        form: { confirmation: "DELETE" },
+        maxRedirects: 0,
+      })
+    ).status()
+  ).toBe(401);
+});

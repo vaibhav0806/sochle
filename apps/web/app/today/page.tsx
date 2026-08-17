@@ -75,6 +75,34 @@ export default async function TodayPage() {
               </ul>
             )}
           </section>
+          <section className="card stack">
+            <h2>Your data</h2>
+            <p className="muted">
+              Download your normalized financial state and decision history. Authorization secrets
+              are never included.
+            </p>
+            <div className="actions">
+              <a className="button-link secondary-link" href="/api/export">
+                Export my data
+              </a>
+            </div>
+            <hr />
+            <h3>Delete local Sochle data</h3>
+            <p className="muted">
+              This removes local snapshots, decisions, and stored Fold credentials. Fold does not
+              currently expose remote revocation here, so disconnect authorization separately in
+              Fold if needed.
+            </p>
+            <form action="/api/delete" method="post" className="stack">
+              <label>
+                Type DELETE to confirm
+                <input name="confirmation" autoComplete="off" required />
+              </label>
+              <button className="danger" type="submit">
+                Delete all my data
+              </button>
+            </form>
+          </section>
         </div>
       )}
     </main>
