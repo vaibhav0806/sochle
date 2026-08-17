@@ -15,6 +15,22 @@ function MoneyValue({ value }: { value: number }) {
   );
 }
 
+function safeCanonicalUrl(value: string | null, merchant: string | null): string | null {
+  if (value === null || merchant === null) return null;
+  try {
+    const url = new URL(value);
+    if (
+      url.protocol !== "https:" ||
+      (url.hostname !== merchant && !url.hostname.endsWith(`.${merchant}`))
+    ) {
+      return null;
+    }
+    return url.toString();
+  } catch {
+    return null;
+  }
+}
+
 export default async function DecisionPage({ params }: { params: Promise<{ id: string }> }) {
   await requireOwnerPage();
   const financialRepository = getRepository();
@@ -29,6 +45,7 @@ export default async function DecisionPage({ params }: { params: Promise<{ id: s
   if (detail === null) notFound();
   const result = detail.decision.auditBundle.result;
   const storedInputs = detail.decision.auditBundle.input;
+  const canonicalUrl = safeCanonicalUrl(detail.intent.canonicalUrl, detail.intent.merchant);
 
   return (
     <main>
@@ -53,6 +70,37 @@ export default async function DecisionPage({ params }: { params: Promise<{ id: s
             <span className="status">Rules v{storedInputs.rules.version}</span>
           </div>
         </section>
+
+        {detail.intent.source === "extension" && (
+          <section className="card stack">
+            <h2>Checked from {detail.intent.merchant}</h2>
+            <dl>
+              <div>
+                <dt>Extracted product</dt>
+                <dd>{detail.intent.extractedTitle}</dd>
+              </div>
+              <div>
+                <dt>Extracted price</dt>
+                <dd>
+                  {detail.intent.extractedPriceMinor === null
+                    ? "Not found"
+                    : formatMinorAsRupees(detail.intent.extractedPriceMinor)}
+                </dd>
+              </div>
+              <div>
+                <dt>Extraction confidence</dt>
+                <dd>{detail.intent.extractionConfidence}</dd>
+              </div>
+            </dl>
+            {canonicalUrl !== null && (
+              <p>
+                <a href={canonicalUrl} rel="noreferrer" target="_blank">
+                  View the original product →
+                </a>
+              </p>
+            )}
+          </section>
+        )}
 
         <section className="metric-grid">
           <article className="card metric">

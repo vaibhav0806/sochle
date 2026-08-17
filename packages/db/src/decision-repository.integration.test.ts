@@ -17,6 +17,7 @@ import {
   connections,
   decisions,
   extensionPairingRequests,
+  extensionPairings,
   financialSnapshots,
   purchaseIntents,
   ruleSets,
@@ -309,6 +310,7 @@ describe("DecisionRepository", () => {
 
   it("exports complete decision data without authorization secrets", async () => {
     const { connection } = await setupDecision();
+    const pairing = await setupPairing(connection.id, "c");
     await repository.createAuditEvent({
       connectionId: connection.id,
       details: {},
@@ -318,14 +320,20 @@ describe("DecisionRepository", () => {
     const exported = await repository.exportOwnerData(connection.id);
 
     expect(exported).toMatchObject({
-      schemaVersion: 1,
+      extensionPairings: [
+        {
+          extensionOrigin: "chrome-extension://abcdefghijklmnopabcdefghijklmnop",
+          id: pairing.id,
+        },
+      ],
+      schemaVersion: 2,
     });
     expect(Number.isNaN(Date.parse(exported.exportedAt))).toBe(false);
     expect(exported.decisions).toHaveLength(1);
     expect(exported.ruleSets).toHaveLength(1);
     expect(exported.snapshots).toHaveLength(1);
     expect(JSON.stringify(exported)).not.toMatch(
-      /encryptedAuthorization|authorizationIv|authorizationTag|accessToken|refreshToken/
+      /credentialHash|encryptedAuthorization|authorizationIv|authorizationTag|accessToken|refreshToken/
     );
     const roundTripped = JSON.parse(JSON.stringify(exported)) as typeof exported;
     expect(roundTripped.decisions[0]?.auditBundle).toEqual(exported.decisions[0]?.auditBundle);
@@ -333,6 +341,7 @@ describe("DecisionRepository", () => {
 
   it("deletes authorization and every connection-owned decision record", async () => {
     const { connection } = await setupDecision();
+    await setupPairing(connection.id, "d");
     await financialRepository.saveAuthorizationState(
       connection.id,
       { accessToken: "synthetic-access", refreshToken: "synthetic-refresh" },
@@ -347,5 +356,7 @@ describe("DecisionRepository", () => {
     await expect(database.db.select().from(purchaseIntents)).resolves.toEqual([]);
     await expect(database.db.select().from(decisions)).resolves.toEqual([]);
     await expect(database.db.select().from(auditEvents)).resolves.toEqual([]);
+    await expect(database.db.select().from(extensionPairings)).resolves.toEqual([]);
+    await expect(database.db.select().from(extensionPairingRequests)).resolves.toEqual([]);
   });
 });

@@ -8,6 +8,7 @@ import {
   corrections,
   dataIssues,
   decisions,
+  extensionPairingRequests,
   extensionPairings,
   financialAccounts,
   financialSnapshots,
@@ -64,12 +65,20 @@ export type OwnerExport = {
   corrections: Array<typeof corrections.$inferSelect>;
   dataIssues: Array<typeof dataIssues.$inferSelect>;
   decisions: DecisionRow[];
+  extensionPairings: Array<{
+    createdAt: Date;
+    extensionOrigin: string;
+    id: string;
+    label: string;
+    lastUsedAt: Date | null;
+    revokedAt: Date | null;
+  }>;
   exportedAt: string;
   financialAccounts: Array<typeof financialAccounts.$inferSelect>;
   normalizedTransactions: Array<typeof normalizedTransactions.$inferSelect>;
   purchaseIntents: PurchaseIntentRow[];
   ruleSets: RuleSetRow[];
-  schemaVersion: 1;
+  schemaVersion: 2;
   snapshots: Array<typeof financialSnapshots.$inferSelect>;
 };
 
@@ -449,6 +458,7 @@ export class DecisionRepository {
       intentRows,
       decisionRows,
       auditRows,
+      pairingRows,
     ] = await Promise.all([
       this.db
         .select()
@@ -472,18 +482,30 @@ export class DecisionRepository {
       this.db.select().from(purchaseIntents).where(eq(purchaseIntents.connectionId, connectionId)),
       this.db.select().from(decisions).where(eq(decisions.connectionId, connectionId)),
       this.db.select().from(auditEvents).where(eq(auditEvents.connectionId, connectionId)),
+      this.db
+        .select({
+          createdAt: extensionPairings.createdAt,
+          extensionOrigin: extensionPairings.extensionOrigin,
+          id: extensionPairings.id,
+          label: extensionPairings.label,
+          lastUsedAt: extensionPairings.lastUsedAt,
+          revokedAt: extensionPairings.revokedAt,
+        })
+        .from(extensionPairings)
+        .where(eq(extensionPairings.connectionId, connectionId)),
     ]);
     return {
       auditEvents: auditRows,
       corrections: correctionRows.map((row) => row.correction),
       dataIssues: issueRows,
       decisions: decisionRows,
+      extensionPairings: pairingRows,
       exportedAt,
       financialAccounts: accountRows,
       normalizedTransactions: transactionRows,
       purchaseIntents: intentRows,
       ruleSets: ruleRows,
-      schemaVersion: 1,
+      schemaVersion: 2,
       snapshots: snapshotRows,
     };
   }
@@ -503,6 +525,7 @@ export class DecisionRepository {
         entityType: "connection",
         type: "deletion_initiated",
       });
+      await transaction.delete(extensionPairingRequests);
       await transaction.delete(connections).where(eq(connections.id, connectionId));
     });
   }

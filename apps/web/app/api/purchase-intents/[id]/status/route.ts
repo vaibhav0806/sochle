@@ -1,19 +1,13 @@
 import { NextResponse } from "next/server";
 
+import {
+  isValidPurchaseStatus,
+  validPlannedDate,
+  type PurchaseStatus,
+} from "../../../../../lib/purchase-status";
 import { isOwnerAuthenticated } from "../../../../../lib/server/auth";
 import { getDecisionRepository, getRepository } from "../../../../../lib/server/database";
 import { getServerEnv } from "../../../../../lib/server/env";
-
-const STATUSES = new Set(["considering", "planned", "purchased", "skipped"] as const);
-
-function validPlannedDate(value: string, today: string): boolean {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
-  const parsed = new Date(`${value}T00:00:00.000Z`);
-  if (!Number.isFinite(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== value)
-    return false;
-  const difference = (parsed.getTime() - Date.parse(`${today}T00:00:00.000Z`)) / 86_400_000;
-  return difference >= 0 && difference <= 365;
-}
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   if (!(await isOwnerAuthenticated())) return new Response("Unauthorized", { status: 401 });
@@ -28,7 +22,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const form = await request.formData();
   const status = form.get("status");
   const plannedFor = form.get("plannedFor");
-  if (typeof status !== "string" || !STATUSES.has(status as never)) {
+  if (typeof status !== "string" || !isValidPurchaseStatus(status)) {
     return new Response("Invalid status", { status: 400 });
   }
   if (
@@ -44,7 +38,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     const updated = await decisionRepository.updateIntentStatus(
       connection.id,
       id,
-      status as "considering" | "planned" | "purchased" | "skipped",
+      status as PurchaseStatus,
       status === "planned" ? (plannedFor as string) : null
     );
     return NextResponse.redirect(
