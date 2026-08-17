@@ -136,6 +136,20 @@ describe("decision service", () => {
     });
   });
 
+  it("creates a cached-snapshot decision in under five seconds", async () => {
+    const { connection } = await seedPrerequisites();
+    const startedAt = performance.now();
+
+    await service.checkPurchase({
+      connectionId: connection.id,
+      description: "Synthetic headphones",
+      evaluatedAt,
+      priceMinor: 45_000_00,
+    });
+
+    expect(performance.now() - startedAt).toBeLessThan(5_000);
+  });
+
   it("returns the same pre-purchase goal headroom for Today without creating a decision", async () => {
     const { connection, snapshot } = await seedPrerequisites();
 

@@ -207,23 +207,23 @@ function evaluatePurchase(input: {
 
 ### Work
 
-- [ ] Implement versioned rule sets with validation for buffer, salary, salary day, essential spending, investment target, threshold, materiality, and horizon.
-- [ ] Implement technical headroom as liquid cash minus immediate obligations minus purchase price.
-- [ ] Implement comfortable headroom using expected income, confirmed obligations, minimum buffer, and purchase price within the horizon.
-- [ ] Implement goal headroom using essential spending, planned investments, planned purchases, buffer, and purchase price.
-- [ ] Implement a daily forecast that applies dated income and obligations in chronological order and returns the first comfortably affordable date.
-- [ ] Calculate issue materiality as the lower of ₹5,000 and 10% of purchase price by default, using integer paise and basis points.
-- [ ] Implement confidence from required-source freshness, unresolved material issues, assumption confirmation, and verdict sensitivity.
-- [ ] Implement verdict precedence so insufficient confidence gates categorical financial advice before other copy is generated.
-- [ ] Persist each decision with immutable calculation inputs, snapshot ID, rule-set version, formulas, intermediate values, exclusions, and confidence reasons.
-- [ ] Build Rules, manual Check, and Decision Detail screens with a complete calculation breakdown.
-- [ ] Build Today with liquid cash, obligations, safe-to-spend, freshness, and blocking issues.
-- [ ] Build the Decisions list with status, verdict, price, confidence, and links to immutable detail.
-- [ ] Add authenticated data export and deletion; deletion removes Fold authorization, normalized data, corrections, rules, decisions, and audit records.
-- [ ] Generate explanation copy from versioned deterministic templates with Sochle's concise English-first Hinglish personality, varied by verdict and confidence; preserve factual labels and guardrails, and defer model-generated explanations until templates prove insufficient.
-- [ ] Add table-driven tests for all seven verdicts and every boundary around zero headroom and the minimum buffer.
-- [ ] Add adversarial cases for transfers, card repayments, salary timing, rent variance, refunds, stale sources, uncertain merchants, and duplicate equal-price charges.
-- [ ] Benchmark the pure evaluation path and cached-snapshot API path.
+- [x] Implement versioned rule sets with validation for buffer, salary, salary day, essential spending, investment target, threshold, materiality, and horizon.
+- [x] Implement technical headroom as liquid cash minus immediate obligations minus purchase price.
+- [x] Implement comfortable headroom using expected income, confirmed obligations, minimum buffer, and purchase price within the horizon.
+- [x] Implement goal headroom using essential spending, planned investments, planned purchases, buffer, and purchase price.
+- [x] Implement a daily forecast that applies dated income and obligations in chronological order and returns the first comfortably affordable date.
+- [x] Calculate issue materiality as the lower of ₹5,000 and 10% of purchase price by default, using integer paise and basis points.
+- [x] Implement confidence from required-source freshness, unresolved material issues, assumption confirmation, and verdict sensitivity.
+- [x] Implement verdict precedence so insufficient confidence gates categorical financial advice before other copy is generated.
+- [x] Persist each decision with immutable calculation inputs, snapshot ID, rule-set version, formulas, intermediate values, exclusions, and confidence reasons.
+- [x] Build Rules, manual Check, and Decision Detail screens with a complete calculation breakdown.
+- [x] Build Today with liquid cash, obligations, safe-to-spend, freshness, and blocking issues.
+- [x] Build the Decisions list with status, verdict, price, confidence, and links to immutable detail.
+- [x] Add authenticated data export and deletion; deletion removes Fold authorization, normalized data, corrections, rules, decisions, and audit records.
+- [x] Generate explanation copy from versioned deterministic templates with Sochle's concise English-first Hinglish personality, varied by verdict and confidence; preserve factual labels and guardrails, and defer model-generated explanations until templates prove insufficient.
+- [x] Add table-driven tests for all seven verdicts and every boundary around zero headroom and the minimum buffer.
+- [x] Add adversarial cases for transfers, card repayments, salary timing, rent variance, refunds, stale sources, uncertain merchants, and duplicate equal-price charges.
+- [x] Benchmark the pure evaluation path and cached-snapshot API path.
 
 **Verification:** The ₹45,000 reference purchase and at least ten adversarial fixtures have hand-calculated expected inputs, headroom values, confidence, verdict, and first-affordable date. Tests assert exact integer results and verdict precedence.
 

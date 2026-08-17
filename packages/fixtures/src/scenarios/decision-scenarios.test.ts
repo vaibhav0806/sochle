@@ -1,7 +1,7 @@
 import { evaluatePurchase } from "@sochle/domain";
 import { describe, expect, it } from "vitest";
 
-import { decisionScenarios } from "./decision-scenarios";
+import { decisionScenarios, referencePurchase } from "./decision-scenarios";
 
 describe("decision scenarios", () => {
   it.each(decisionScenarios)("reproduces $id", (scenario) => {
@@ -15,5 +15,13 @@ describe("decision scenarios", () => {
       scenario.expected.firstComfortablyAffordableDate
     );
     expect(result.formulaVersion).toBe(1);
+  });
+
+  it("keeps 1,000 pure evaluations comfortably below the API budget", () => {
+    const startedAt = performance.now();
+    for (let index = 0; index < 1_000; index += 1) {
+      evaluatePurchase(referencePurchase.input);
+    }
+    expect(performance.now() - startedAt).toBeLessThan(1_000);
   });
 });

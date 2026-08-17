@@ -216,6 +216,8 @@ describe("DecisionRepository", () => {
     expect(JSON.stringify(exported)).not.toMatch(
       /encryptedAuthorization|authorizationIv|authorizationTag|accessToken|refreshToken/
     );
+    const roundTripped = JSON.parse(JSON.stringify(exported)) as typeof exported;
+    expect(roundTripped.decisions[0]?.auditBundle).toEqual(exported.decisions[0]?.auditBundle);
   });
 
   it("deletes authorization and every connection-owned decision record", async () => {
