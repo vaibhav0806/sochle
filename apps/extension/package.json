@@ -1,0 +1,13 @@
+{
+  "name": "@sochle/extension",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "build": "wxt build",
+    "dev": "wxt",
+    "typecheck": "wxt prepare && tsc --noEmit"
+  },
+  "devDependencies": {
+    "wxt": "^0.21.4"
+  }
+}

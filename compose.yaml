@@ -1,0 +1,19 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: sochle
+      POSTGRES_PASSWORD: sochle
+      POSTGRES_USER: sochle
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sochle -d sochle"]
+      interval: 2s
+      timeout: 2s
+      retries: 15
+    ports:
+      - "65432:5432"
+    volumes:
+      - sochle_postgres:/var/lib/postgresql/data
+
+volumes:
+  sochle_postgres:

@@ -39,20 +39,41 @@ The planned stack is TypeScript, pnpm workspaces, Next.js, WXT, PostgreSQL, Driz
 
 ## Roadmap
 
-| Milestone | Outcome |
-|---|---|
-| 0. Foundation | Secure monorepo, contracts, CI, and synthetic demo mode |
-| 1. Financial foundation | Fold data normalized, persisted, reconciled, and freshness-labelled |
-| 2. Decision core | Manual purchases receive deterministic, explainable verdicts |
-| 3. Point of purchase | Amazon, Flipkart, and Myntra pages produce saved decisions end to end |
-| 4. Personal beta | Wait-until-payday, outcomes, weekly review, and dogfooding metrics |
-| 5. Closed loop | Receipts, transactions, refunds, and predicted-versus-actual impact |
+| Milestone               | Outcome                                                               |
+| ----------------------- | --------------------------------------------------------------------- |
+| 0. Foundation           | Secure monorepo, contracts, CI, and synthetic demo mode               |
+| 1. Financial foundation | Fold data normalized, persisted, reconciled, and freshness-labelled   |
+| 2. Decision core        | Manual purchases receive deterministic, explainable verdicts          |
+| 3. Point of purchase    | Amazon, Flipkart, and Myntra pages produce saved decisions end to end |
+| 4. Personal beta        | Wait-until-payday, outcomes, weekly review, and dogfooding metrics    |
+| 5. Closed loop          | Receipts, transactions, refunds, and predicted-versus-actual impact   |
 
 See [MILESTONES.md](MILESTONES.md) for the implementation sequence and [SOCHLE_PRD.md](SOCHLE_PRD.md) for the complete product requirements.
 
 ## Current status
 
-Planning and repository setup. Implementation has not started.
+Milestones 0 and 1 are under active development.
+
+## Local development
+
+Requirements: Node.js 24+, pnpm 10+, and Docker.
+
+```bash
+pnpm install
+cp .env.example .env
+docker compose up -d postgres
+pnpm dev
+```
+
+Before pushing changes, run:
+
+```bash
+pnpm format:check
+pnpm lint
+pnpm typecheck
+pnpm test
+pnpm build
+```
 
 ## Fold usage and distribution
 
