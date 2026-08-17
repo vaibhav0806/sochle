@@ -57,6 +57,9 @@ export default async function MoneyInboxPage() {
                   <option value="lending">Lending</option>
                   <option value="income">Income</option>
                 </select>
+                <label className="muted">
+                  <input name="applyToFuture" type="checkbox" /> Apply to future matching merchants
+                </label>
                 <button name="action" value="classify" type="submit">
                   Classify
                 </button>

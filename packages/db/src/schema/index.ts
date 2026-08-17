@@ -1,4 +1,5 @@
 export * from "./accounts";
+export * from "./classification-rules";
 export * from "./audit-events";
 export * from "./common";
 export * from "./connections";

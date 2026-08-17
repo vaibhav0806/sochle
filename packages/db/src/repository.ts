@@ -4,6 +4,7 @@ import { and, asc, desc, eq, sql } from "drizzle-orm";
 import type { SochleDatabase } from "./database";
 import {
   connections,
+  transactionClassificationRules,
   corrections,
   dataIssues,
   financialAccounts,
@@ -29,8 +30,13 @@ type IssueResolution =
         NormalizedFinancialState["transactions"][number]["sochleClassification"],
         "unclassified"
       >;
+      applyToFuture?: boolean | undefined;
     }
   | { action: "exclude" | "ignore_once"; classification?: never };
+
+function merchantKey(value: string): string {
+  return value.trim().replace(/\s+/g, " ").toLocaleLowerCase("en-IN");
+}
 
 export class FinancialRepository {
   constructor(private readonly db: SochleDatabase) {}
@@ -213,8 +219,15 @@ export class FinancialRepository {
           )
         )
         .orderBy(asc(corrections.createdAt));
+      const persistedRules = await transaction
+        .select()
+        .from(transactionClassificationRules)
+        .where(eq(transactionClassificationRules.connectionId, connectionId));
       const correctionByTransaction = new Map(
         persistedCorrections.map((correction) => [correction.relatedEntityId, correction])
+      );
+      const classificationByMerchant = new Map(
+        persistedRules.map((rule) => [rule.merchantKey, rule.classification])
       );
 
       for (const account of state.accounts) {
@@ -279,7 +292,10 @@ export class FinancialRepository {
           sochleClassification:
             correction?.action === "classify" && correction.classification !== null
               ? correction.classification
-              : normalizedTransaction.sochleClassification,
+              : ((normalizedTransaction.rawMerchant === null
+                  ? undefined
+                  : classificationByMerchant.get(merchantKey(normalizedTransaction.rawMerchant))) ??
+                normalizedTransaction.sochleClassification),
           sourceCategory: normalizedTransaction.sourceCategory,
           sourceTransactionId: normalizedTransaction.sourceTransactionId,
           transactionDate: normalizedTransaction.date,
@@ -387,6 +403,34 @@ export class FinancialRepository {
               eq(normalizedTransactions.sourceTransactionId, issue.relatedEntityId)
             )
           );
+        if (resolution.applyToFuture) {
+          const [classifiedTransaction] = await transaction
+            .select({ rawMerchant: normalizedTransactions.rawMerchant })
+            .from(normalizedTransactions)
+            .where(
+              and(
+                eq(normalizedTransactions.connectionId, issue.connectionId),
+                eq(normalizedTransactions.sourceTransactionId, issue.relatedEntityId)
+              )
+            )
+            .limit(1);
+          if (classifiedTransaction?.rawMerchant !== null && classifiedTransaction !== undefined) {
+            await transaction
+              .insert(transactionClassificationRules)
+              .values({
+                classification: resolution.classification,
+                connectionId: issue.connectionId,
+                merchantKey: merchantKey(classifiedTransaction.rawMerchant),
+              })
+              .onConflictDoUpdate({
+                target: [
+                  transactionClassificationRules.connectionId,
+                  transactionClassificationRules.merchantKey,
+                ],
+                set: { classification: resolution.classification },
+              });
+          }
+        }
       }
       if (resolution.action === "exclude") {
         await transaction

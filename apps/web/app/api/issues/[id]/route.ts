@@ -12,6 +12,7 @@ import { getServerEnv } from "../../../../lib/server/env";
 const resolutionSchema = z.discriminatedUnion("action", [
   z.object({
     action: z.literal("classify"),
+    applyToFuture: z.boolean().optional(),
     classification: z.enum([
       "consumption",
       "investment",
@@ -34,6 +35,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const form = await request.formData();
   const parsed = resolutionSchema.safeParse({
     action: form.get("action"),
+    applyToFuture: form.get("applyToFuture") === "on",
     classification: form.get("classification"),
   });
   if (!parsed.success) return new Response("Invalid resolution", { status: 400 });

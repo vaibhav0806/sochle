@@ -5,7 +5,12 @@ import { afterAll, beforeEach, describe, expect, it } from "vitest";
 
 import { createSochleDatabase } from "./database";
 import { FinancialRepository } from "./repository";
-import { connections, financialAccounts, normalizedTransactions } from "./schema";
+import {
+  connections,
+  financialAccounts,
+  normalizedTransactions,
+  transactionClassificationRules,
+} from "./schema";
 
 const database = createSochleDatabase(
   process.env.TEST_DATABASE_URL ?? "postgresql://sochle:sochle@localhost:65432/sochle_verify"
@@ -223,6 +228,34 @@ describe("FinancialRepository", () => {
       .where(eq(normalizedTransactions.sourceTransactionId, "demo_transaction_1"));
     expect(transaction?.sochleClassification).toBe("consumption");
     await expect(repository.listOpenIssues(connection.id)).resolves.toEqual([]);
+  });
+
+  it("applies an opted-in merchant classification rule to later projections", async () => {
+    const { connection, issue } = await createOpenIssue();
+
+    await repository.resolveIssue(issue.id, {
+      action: "classify",
+      applyToFuture: true,
+      classification: "investment",
+    });
+    await repository.persistProjection(connection.id, {
+      ...snapshot,
+      transactions: [
+        {
+          ...snapshot.transactions[0]!,
+          sourceTransactionId: "demo_transaction_2",
+        },
+      ],
+    });
+
+    await expect(database.db.select().from(transactionClassificationRules)).resolves.toHaveLength(
+      1
+    );
+    const [transaction] = await database.db
+      .select()
+      .from(normalizedTransactions)
+      .where(eq(normalizedTransactions.sourceTransactionId, "demo_transaction_2"));
+    expect(transaction?.sochleClassification).toBe("investment");
   });
 
   it("persists exclusion corrections across later provider projections", async () => {
