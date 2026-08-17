@@ -10,11 +10,13 @@ import { afterAll, beforeEach, describe, expect, it } from "vitest";
 
 import { createSochleDatabase } from "./database";
 import { DecisionRepository } from "./decision-repository";
+import { ExtensionRepository } from "./extension-repository";
 import { FinancialRepository } from "./repository";
 import {
   auditEvents,
   connections,
   decisions,
+  extensionPairingRequests,
   financialSnapshots,
   purchaseIntents,
   ruleSets,
@@ -24,6 +26,7 @@ const database = createSochleDatabase(
   process.env.TEST_DATABASE_URL ?? "postgresql://sochle:sochle@localhost:65432/sochle_verify"
 );
 const repository = new DecisionRepository(database.db);
+const extensionRepository = new ExtensionRepository(database.db);
 const financialRepository = new FinancialRepository(database.db);
 
 const evaluatedAt = "2026-08-17T12:00:00.000Z";
@@ -54,6 +57,7 @@ const rules: RuleSet = {
 
 beforeEach(async () => {
   await database.db.delete(connections);
+  await database.db.delete(extensionPairingRequests);
 });
 
 afterAll(async () => {
@@ -87,6 +91,21 @@ async function setupDecision() {
     snapshotId: snapshot.id,
   });
   return { connection, result, ruleSet, saved, snapshot };
+}
+
+async function setupPairing(connectionId: string, hashCharacter: string) {
+  const request = await extensionRepository.createPairingRequest({
+    callbackUrl: "https://abcdefghijklmnopabcdefghijklmnop.chromiumapp.org/pair",
+    createdAt: new Date("2026-08-18T08:00:00.000Z"),
+    credentialHash: hashCharacter.repeat(64),
+    expiresAt: new Date("2026-08-18T08:10:00.000Z"),
+    extensionOrigin: "chrome-extension://abcdefghijklmnopabcdefghijklmnop",
+  });
+  return extensionRepository.approvePairingRequest(
+    request.id,
+    connectionId,
+    new Date("2026-08-18T08:05:00.000Z")
+  );
 }
 
 describe("decision schema", () => {
@@ -194,6 +213,98 @@ describe("DecisionRepository", () => {
     ).rejects.toThrow("Planned purchases require a date");
     await repository.updateIntentStatus(connection.id, saved.intent.id, "skipped", null);
     await expect(repository.listPlannedPurchases(connection.id)).resolves.toEqual([]);
+  });
+
+  it("persists extension provenance and returns one decision for an idempotent retry", async () => {
+    const { connection, result, ruleSet, snapshot } = await setupDecision();
+    const pairing = await setupPairing(connection.id, "e");
+    const extensionContext = {
+      canonicalUrl: "https://www.amazon.in/dp/SYNTHETIC",
+      extractedPriceMinor: 49_000_00,
+      extractedTitle: "Synthetic headphones MRP title",
+      extractionConfidence: "high" as const,
+      idempotencyKey: "10000000-0000-4000-8000-000000000001",
+      merchant: "amazon.in" as const,
+      pairingId: pairing.id,
+    };
+    const input = {
+      auditBundle: { input: result.inputs, result },
+      connectionId: connection.id,
+      description: "Synthetic headphones, corrected",
+      extensionContext,
+      priceMinor: 45_000_00,
+      result,
+      ruleSetId: ruleSet.id,
+      snapshotId: snapshot.id,
+    };
+
+    const first = await repository.createPurchaseDecision(input);
+    const retry = await repository.createPurchaseDecision(input);
+
+    expect(retry).toEqual(first);
+    expect(first.intent).toMatchObject({
+      canonicalUrl: extensionContext.canonicalUrl,
+      description: "Synthetic headphones, corrected",
+      extractedPriceMinor: 49_000_00,
+      extractedTitle: extensionContext.extractedTitle,
+      extractionConfidence: "high",
+      idempotencyKey: extensionContext.idempotencyKey,
+      merchant: "amazon.in",
+      pairingId: pairing.id,
+      priceMinor: 45_000_00,
+      source: "extension",
+    });
+    await expect(database.db.select().from(purchaseIntents)).resolves.toHaveLength(2);
+    await expect(database.db.select().from(decisions)).resolves.toHaveLength(2);
+  });
+
+  it("allows the same request key on another pairing but scopes extension outcomes", async () => {
+    const { connection, result, ruleSet, snapshot } = await setupDecision();
+    const firstPairing = await setupPairing(connection.id, "f");
+    const secondPairing = await setupPairing(connection.id, "1");
+    const extensionContext = {
+      canonicalUrl: "https://www.flipkart.com/synthetic/p/item",
+      extractedPriceMinor: 45_000_00,
+      extractedTitle: "Synthetic headphones",
+      extractionConfidence: "medium" as const,
+      idempotencyKey: "20000000-0000-4000-8000-000000000001",
+      merchant: "flipkart.com" as const,
+    };
+    const createForPairing = (pairingId: string) =>
+      repository.createPurchaseDecision({
+        auditBundle: { input: result.inputs, result },
+        connectionId: connection.id,
+        description: "Synthetic headphones",
+        extensionContext: { ...extensionContext, pairingId },
+        priceMinor: 45_000_00,
+        result,
+        ruleSetId: ruleSet.id,
+        snapshotId: snapshot.id,
+      });
+
+    const first = await createForPairing(firstPairing.id);
+    const second = await createForPairing(secondPairing.id);
+    expect(second.intent.id).not.toBe(first.intent.id);
+
+    await expect(
+      repository.updateExtensionIntentStatus(
+        connection.id,
+        secondPairing.id,
+        first.intent.id,
+        "waiting"
+      )
+    ).rejects.toThrow("Purchase intent not found");
+    await expect(
+      repository.updateExtensionIntentStatus(
+        connection.id,
+        firstPairing.id,
+        first.intent.id,
+        "waiting"
+      )
+    ).resolves.toEqual({ latestDecisionId: first.decision.id, status: "waiting" });
+    await expect(repository.getDecision(connection.id, first.decision.id)).resolves.toMatchObject({
+      intent: { plannedFor: null, status: "waiting" },
+    });
   });
 
   it("exports complete decision data without authorization secrets", async () => {

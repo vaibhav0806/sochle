@@ -1,5 +1,5 @@
 import type { DecisionResult, PlannedPurchase, RuleSet } from "@sochle/domain";
-import { and, asc, desc, eq, isNotNull } from "drizzle-orm";
+import { and, asc, desc, eq, isNotNull, isNull } from "drizzle-orm";
 
 import type { SochleDatabase } from "./database";
 import {
@@ -8,6 +8,7 @@ import {
   corrections,
   dataIssues,
   decisions,
+  extensionPairings,
   financialAccounts,
   financialSnapshots,
   normalizedTransactions,
@@ -25,6 +26,15 @@ export type CreatePurchaseDecisionInput = {
   auditBundle: DecisionAuditBundle;
   connectionId: string;
   description: string;
+  extensionContext?: {
+    canonicalUrl: string;
+    extractedPriceMinor: number | null;
+    extractedTitle: string;
+    extractionConfidence: "high" | "medium" | "low";
+    idempotencyKey: string;
+    merchant: "amazon.in" | "flipkart.com" | "myntra.com";
+    pairingId: string;
+  };
   priceMinor: number;
   result: DecisionResult;
   ruleSetId: string;
@@ -113,14 +123,61 @@ export class DecisionRepository {
         throw new Error("Decision context does not belong to connection");
       }
 
-      const [intent] = await transaction
-        .insert(purchaseIntents)
-        .values({
-          connectionId: input.connectionId,
-          description: input.description,
-          priceMinor: input.priceMinor,
-        })
-        .returning();
+      if (input.extensionContext !== undefined) {
+        const [pairing] = await transaction
+          .select({ id: extensionPairings.id })
+          .from(extensionPairings)
+          .where(
+            and(
+              eq(extensionPairings.id, input.extensionContext.pairingId),
+              eq(extensionPairings.connectionId, input.connectionId),
+              isNull(extensionPairings.revokedAt)
+            )
+          )
+          .limit(1);
+        if (pairing === undefined)
+          throw new Error("Extension pairing does not belong to connection");
+      }
+
+      const intentValues = {
+        canonicalUrl: input.extensionContext?.canonicalUrl,
+        connectionId: input.connectionId,
+        description: input.description,
+        extractedPriceMinor: input.extensionContext?.extractedPriceMinor,
+        extractedTitle: input.extensionContext?.extractedTitle,
+        extractionConfidence: input.extensionContext?.extractionConfidence,
+        idempotencyKey: input.extensionContext?.idempotencyKey,
+        merchant: input.extensionContext?.merchant,
+        pairingId: input.extensionContext?.pairingId,
+        priceMinor: input.priceMinor,
+        source: input.extensionContext === undefined ? ("manual" as const) : ("extension" as const),
+      };
+      const [intent] =
+        input.extensionContext === undefined
+          ? await transaction.insert(purchaseIntents).values(intentValues).returning()
+          : await transaction
+              .insert(purchaseIntents)
+              .values(intentValues)
+              .onConflictDoNothing({
+                target: [purchaseIntents.pairingId, purchaseIntents.idempotencyKey],
+              })
+              .returning();
+      if (intent === undefined && input.extensionContext !== undefined) {
+        const [existing] = await transaction
+          .select({ decision: decisions, intent: purchaseIntents })
+          .from(purchaseIntents)
+          .innerJoin(decisions, eq(decisions.purchaseIntentId, purchaseIntents.id))
+          .where(
+            and(
+              eq(purchaseIntents.pairingId, input.extensionContext.pairingId),
+              eq(purchaseIntents.idempotencyKey, input.extensionContext.idempotencyKey)
+            )
+          )
+          .orderBy(desc(decisions.createdAt), desc(decisions.id))
+          .limit(1);
+        if (existing === undefined) throw new Error("Unable to load idempotent purchase decision");
+        return existing;
+      }
       if (intent === undefined) throw new Error("Unable to create purchase intent");
 
       const [decision] = await transaction
@@ -230,6 +287,22 @@ export class DecisionRepository {
     return row ?? null;
   }
 
+  async getDecisionByExtensionRequest(pairingId: string, idempotencyKey: string) {
+    const [row] = await this.db
+      .select({ decision: decisions, intent: purchaseIntents })
+      .from(purchaseIntents)
+      .innerJoin(decisions, eq(decisions.purchaseIntentId, purchaseIntents.id))
+      .where(
+        and(
+          eq(purchaseIntents.pairingId, pairingId),
+          eq(purchaseIntents.idempotencyKey, idempotencyKey)
+        )
+      )
+      .orderBy(desc(decisions.createdAt), desc(decisions.id))
+      .limit(1);
+    return row ?? null;
+  }
+
   async listDecisions(connectionId: string) {
     const rows = await this.db
       .select({ decision: decisions, intent: purchaseIntents })
@@ -303,6 +376,51 @@ export class DecisionRepository {
         type: "intent_status_changed",
       });
       return { latestDecisionId: latestDecision.id };
+    });
+  }
+
+  async updateExtensionIntentStatus(
+    connectionId: string,
+    pairingId: string,
+    intentId: string,
+    status: "waiting" | "purchased" | "skipped" | "not_relevant"
+  ): Promise<{ latestDecisionId: string; status: typeof status }> {
+    return this.db.transaction(async (transaction) => {
+      const [intent] = await transaction
+        .select({ id: purchaseIntents.id })
+        .from(purchaseIntents)
+        .where(
+          and(
+            eq(purchaseIntents.connectionId, connectionId),
+            eq(purchaseIntents.id, intentId),
+            eq(purchaseIntents.pairingId, pairingId),
+            eq(purchaseIntents.source, "extension")
+          )
+        )
+        .limit(1);
+      if (intent === undefined) throw new Error("Purchase intent not found");
+      const [latestDecision] = await transaction
+        .select({ id: decisions.id })
+        .from(decisions)
+        .where(
+          and(eq(decisions.connectionId, connectionId), eq(decisions.purchaseIntentId, intentId))
+        )
+        .orderBy(desc(decisions.createdAt), desc(decisions.id))
+        .limit(1);
+      if (latestDecision === undefined) throw new Error("Purchase intent has no decision");
+
+      await transaction
+        .update(purchaseIntents)
+        .set({ plannedFor: null, status })
+        .where(eq(purchaseIntents.id, intentId));
+      await transaction.insert(auditEvents).values({
+        connectionId,
+        details: { plannedFor: null, status },
+        entityId: intentId,
+        entityType: "purchase_intent",
+        type: "intent_status_changed",
+      });
+      return { latestDecisionId: latestDecision.id, status };
     });
   }
 

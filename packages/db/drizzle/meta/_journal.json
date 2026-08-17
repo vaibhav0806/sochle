@@ -36,6 +36,13 @@
       "when": 1786995441289,
       "tag": "0004_extension-pairings",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1786995618346,
+      "tag": "0005_extension-purchases",
+      "breakpoints": true
     }
   ]
 }

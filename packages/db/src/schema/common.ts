@@ -50,9 +50,17 @@ export const financialVerdict = pgEnum("financial_verdict", [
 ]);
 export const purchaseIntentStatus = pgEnum("purchase_intent_status", [
   "considering",
+  "waiting",
   "planned",
   "purchased",
   "skipped",
+  "not_relevant",
+]);
+export const purchaseIntentSource = pgEnum("purchase_intent_source", ["manual", "extension"]);
+export const commerceMerchant = pgEnum("commerce_merchant", [
+  "amazon.in",
+  "flipkart.com",
+  "myntra.com",
 ]);
 export const auditEventType = pgEnum("audit_event_type", [
   "decision_created",
