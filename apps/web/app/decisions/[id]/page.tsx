@@ -122,6 +122,7 @@ export default async function DecisionPage({ params }: { params: Promise<{ id: s
         </section>
 
         <StatusForm
+          firstComfortablyAffordableDate={result.firstComfortablyAffordableDate}
           intentId={detail.intent.id}
           plannedFor={detail.intent.plannedFor}
           status={detail.intent.status}

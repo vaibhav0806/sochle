@@ -6,7 +6,20 @@ import { getDecisionRepository, getRepository } from "../../lib/server/database"
 
 export const dynamic = "force-dynamic";
 
-export default async function DecisionsPage() {
+const statuses = [
+  "considering",
+  "waiting",
+  "planned",
+  "purchased",
+  "skipped",
+  "not_relevant",
+] as const;
+
+export default async function DecisionsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ status?: string }>;
+}) {
   await requireOwnerPage();
   const financialRepository = getRepository();
   const decisionRepository = getDecisionRepository();
@@ -16,13 +29,31 @@ export default async function DecisionsPage() {
     connection === null || decisionRepository === null
       ? []
       : await decisionRepository.listDecisions(connection.id);
+  const selectedStatus = (await searchParams).status;
+  const filteredRows = statuses.includes(selectedStatus as (typeof statuses)[number])
+    ? rows.filter((row) => row.intent.status === selectedStatus)
+    : rows;
 
   return (
     <main>
       <p className="eyebrow">Decision memory</p>
       <h1>Decisions</h1>
       <p>Every answer remains tied to the exact snapshot, rules, and formula that produced it.</p>
-      {rows.length === 0 ? (
+      <form action="/decisions" className="actions">
+        <label>
+          Status
+          <select defaultValue={selectedStatus ?? ""} name="status">
+            <option value="">All decisions</option>
+            {statuses.map((status) => (
+              <option key={status} value={status}>
+                {status.replaceAll("_", " ")}
+              </option>
+            ))}
+          </select>
+        </label>
+        <button type="submit">Filter</button>
+      </form>
+      {filteredRows.length === 0 ? (
         <section className="card">
           <h2>No decisions yet</h2>
           <p className="muted">Run your first purchase check to start the history.</p>
@@ -41,7 +72,7 @@ export default async function DecisionsPage() {
               </tr>
             </thead>
             <tbody>
-              {rows.map(({ decision, intent }) => (
+              {filteredRows.map(({ decision, intent }) => (
                 <tr key={intent.id}>
                   <td>
                     <Link href={`/decisions/${decision.id}`}>{intent.description}</Link>

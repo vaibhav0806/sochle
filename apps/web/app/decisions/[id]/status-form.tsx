@@ -6,10 +6,12 @@ type PurchaseStatus =
   "considering" | "waiting" | "planned" | "purchased" | "skipped" | "not_relevant";
 
 export function StatusForm({
+  firstComfortablyAffordableDate,
   intentId,
   plannedFor,
   status,
 }: {
+  firstComfortablyAffordableDate: string | null;
   intentId: string;
   plannedFor: string | null;
   status: PurchaseStatus;
@@ -36,7 +38,12 @@ export function StatusForm({
       {selected === "planned" && (
         <label>
           Planned for
-          <input name="plannedFor" type="date" defaultValue={plannedFor ?? ""} required />
+          <input
+            name="plannedFor"
+            type="date"
+            defaultValue={plannedFor ?? firstComfortablyAffordableDate ?? ""}
+            required
+          />
         </label>
       )}
       <button type="submit">Update status</button>
