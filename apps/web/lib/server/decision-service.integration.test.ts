@@ -142,8 +142,11 @@ describe("decision service", () => {
     const today = await service.getTodaySummary(connection.id, evaluatedAt);
 
     expect(today).toMatchObject({
+      immediateObligationsMinor: 30_000_00,
+      liquidCashMinor: 150_000_00,
       safeToSpendMinor: 50_000_00,
       snapshotId: snapshot.id,
+      upcomingObligationsMinor: 30_000_00,
     });
     await expect(decisionRepository.listDecisions(connection.id)).resolves.toEqual([]);
   });

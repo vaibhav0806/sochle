@@ -95,10 +95,21 @@ export function createDecisionService(
       });
       return {
         ...position,
+        immediateObligationsMinor:
+          snapshot.state.liquidCash.minor - position.headrooms.technicalMinor,
         issues,
+        liquidCashMinor: snapshot.state.liquidCash.minor,
         ruleSetVersion: ruleSet.version,
         snapshotAsOf: snapshot.state.asOf,
         snapshotId: snapshot.id,
+        upcomingObligationsMinor: position.forecast.days.reduce(
+          (total, day) =>
+            total +
+            day.events
+              .filter((event) => event.kind === "obligation")
+              .reduce((dayTotal, event) => dayTotal + event.amountMinor, 0),
+          0
+        ),
       };
     },
   };

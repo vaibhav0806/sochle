@@ -34,6 +34,40 @@ nav,
   gap: 1rem;
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
+.metric {
+  display: grid;
+  gap: 0.5rem;
+}
+.metric > span {
+  color: #526058;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+.metric > strong {
+  font-size: 1.45rem;
+}
+.negative-value {
+  color: #9b2c24;
+}
+.table-wrap {
+  overflow-x: auto;
+}
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+th,
+td {
+  border-bottom: 1px solid #ddd6c5;
+  padding: 0.8rem;
+  text-align: left;
+  vertical-align: top;
+}
+th {
+  color: #526058;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+}
 .form-grid label,
 form > label {
   display: grid;
