@@ -1,0 +1,177 @@
+:host {
+  all: initial;
+  color: #172019;
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+.sochle-trigger {
+  background: #172019;
+  border: 0;
+  border-radius: 999px;
+  bottom: 1.25rem;
+  box-shadow: 0 0.75rem 2rem rgb(23 32 25 / 24%);
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 750;
+  padding: 0.72rem 1rem;
+  position: fixed;
+  right: 1.25rem;
+  z-index: 2147483647;
+}
+
+.sochle-card {
+  background: #f8f5ed;
+  border: 1px solid #dcd5c7;
+  border-radius: 1rem;
+  bottom: 1.25rem;
+  box-shadow: 0 1rem 3rem rgb(23 32 25 / 24%);
+  box-sizing: border-box;
+  font-size: 0.9rem;
+  max-height: calc(100vh - 2.5rem);
+  overflow: auto;
+  padding: 1rem;
+  position: fixed;
+  right: 1.25rem;
+  width: min(23rem, calc(100vw - 2.5rem));
+  z-index: 2147483647;
+}
+
+.sochle-card header,
+.sochle-card header > div,
+.sochle-stack {
+  display: flex;
+}
+
+.sochle-card header {
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.sochle-card header > div,
+.sochle-stack {
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.sochle-card p,
+.sochle-card dl {
+  color: #526058;
+  line-height: 1.45;
+  margin: 0;
+}
+
+.sochle-eyebrow {
+  color: #a3472f;
+  font-size: 0.68rem;
+  font-weight: 750;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.sochle-close,
+.sochle-link {
+  background: transparent;
+  border: 0;
+  color: #526058;
+  font-size: 0.72rem;
+  padding: 0;
+  text-decoration: underline;
+}
+
+.sochle-stack {
+  margin-top: 1rem;
+}
+
+.sochle-stack label {
+  color: #526058;
+  display: flex;
+  flex-direction: column;
+  font-size: 0.75rem;
+  font-weight: 650;
+  gap: 0.3rem;
+}
+
+.sochle-stack input {
+  background: #fff;
+  border: 1px solid #cfc7b8;
+  border-radius: 0.55rem;
+  box-sizing: border-box;
+  color: #172019;
+  padding: 0.62rem 0.7rem;
+  width: 100%;
+}
+
+.sochle-stack > button:not(.sochle-close, .sochle-link),
+.sochle-outcomes button {
+  background: #172019;
+  border: 0;
+  border-radius: 999px;
+  color: #fff;
+  font-weight: 700;
+  padding: 0.65rem 0.85rem;
+}
+
+.sochle-stack button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.sochle-badges,
+.sochle-outcomes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.sochle-badges span {
+  background: #e5e0d5;
+  border-radius: 999px;
+  color: #39453d;
+  font-size: 0.7rem;
+  padding: 0.28rem 0.5rem;
+}
+
+.sochle-card dl > div {
+  display: flex;
+  justify-content: space-between;
+}
+
+.sochle-card dd {
+  color: #172019;
+  font-weight: 650;
+  margin: 0;
+}
+
+.sochle-outcomes {
+  align-items: center;
+  border-top: 1px solid #ddd6c9;
+  padding-top: 0.75rem;
+}
+
+.sochle-outcomes button {
+  background: #e5e0d5;
+  color: #172019;
+  font-size: 0.7rem;
+  padding: 0.38rem 0.55rem;
+}
+
+.sochle-saved {
+  color: #28714e !important;
+  font-weight: 700;
+}
+
+[role="alert"] {
+  background: #f7dfd7;
+  border-radius: 0.5rem;
+  color: #842f22 !important;
+  padding: 0.55rem 0.65rem;
+}
