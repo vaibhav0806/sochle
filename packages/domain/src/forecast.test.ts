@@ -57,6 +57,23 @@ describe("calculateHeadrooms", () => {
       })
     ).toThrow("Money calculation exceeded the safe integer range");
   });
+
+  it("supports signed liquid cash without treating debt as invalid input", () => {
+    expect(
+      calculateHeadrooms({
+        additionalObligationsMinor: 0,
+        confirmedObligationsMinor: 0,
+        essentialSpendingMinor: 0,
+        expectedIncomeMinor: 0,
+        immediateObligationsMinor: 0,
+        investmentTargetMinor: 0,
+        liquidCashMinor: -1_000,
+        minimumBufferMinor: 0,
+        plannedPurchasesMinor: 0,
+        purchasePriceMinor: 0,
+      })
+    ).toEqual({ comfortableMinor: -1_000, goalMinor: -1_000, technicalMinor: -1_000 });
+  });
 });
 
 describe("buildDailyForecast", () => {

@@ -69,6 +69,13 @@ function assertMoney(value: number): number {
   return value;
 }
 
+function assertSignedMoney(value: number): number {
+  if (!Number.isSafeInteger(value)) {
+    throw new Error("Money values must use safe integer paise");
+  }
+  return value;
+}
+
 function add(left: number, right: number): number {
   const result = left + right;
   if (!Number.isSafeInteger(result)) {
@@ -86,7 +93,10 @@ function sum(values: number[]): number {
 }
 
 export function calculateHeadrooms(input: HeadroomInput): Headrooms {
-  Object.values(input).forEach(assertMoney);
+  assertSignedMoney(input.liquidCashMinor);
+  Object.entries(input)
+    .filter(([key]) => key !== "liquidCashMinor")
+    .forEach(([, value]) => assertMoney(value));
   const technicalMinor = subtract(
     subtract(input.liquidCashMinor, input.immediateObligationsMinor),
     input.purchasePriceMinor
@@ -173,13 +183,13 @@ export function buildDailyForecast(input: DailyForecastInput): DailyForecast {
   [
     input.essentialReserveMinor,
     input.investmentReserveMinor,
-    input.liquidCashMinor,
     input.minimumBufferMinor,
     input.purchasePriceMinor,
     ...input.income.map((event) => event.amountMinor),
     ...input.obligations.map((event) => event.amountMinor),
     ...input.plannedPurchases.map((event) => event.amountMinor),
   ].forEach(assertMoney);
+  assertSignedMoney(input.liquidCashMinor);
 
   const withinHorizon = (dueOn: string) => dueOn >= input.startDate && dueOn <= input.endDate;
   let cashMinor = input.liquidCashMinor;
