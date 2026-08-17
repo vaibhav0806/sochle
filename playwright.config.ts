@@ -21,7 +21,7 @@ export default defineConfig({
     },
     {
       name: "live-chromium",
-      testMatch: /live\.e2e\.ts/,
+      testMatch: /(?:live|decision-core)\.e2e\.ts/,
       use: { ...devices["Desktop Chrome"], baseURL: "http://127.0.0.1:3101" },
     },
   ],

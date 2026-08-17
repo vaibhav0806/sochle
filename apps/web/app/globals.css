@@ -28,6 +28,25 @@ nav,
   display: flex;
   gap: 1rem;
 }
+.form-grid,
+.metric-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.form-grid label,
+form > label {
+  display: grid;
+  gap: 0.45rem;
+}
+.checkbox-label {
+  align-items: center;
+  display: flex !important;
+  gap: 0.6rem !important;
+}
+.checkbox-label input {
+  width: auto;
+}
 nav a,
 a {
   color: #315b42;
@@ -175,6 +194,10 @@ input {
   background: white;
   width: 100%;
 }
+select {
+  background: white;
+  width: 100%;
+}
 label,
 dt {
   font-size: 0.85rem;
@@ -204,5 +227,9 @@ pre {
   .actions {
     align-items: stretch;
     flex-direction: column;
+  }
+  .form-grid,
+  .metric-grid {
+    grid-template-columns: 1fr;
   }
 }

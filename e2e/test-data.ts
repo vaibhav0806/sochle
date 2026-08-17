@@ -1,5 +1,10 @@
-import type { NormalizedFinancialState } from "@sochle/domain";
-import { connections, createSochleDatabase, FinancialRepository } from "@sochle/db";
+import { REQUIRED_DECISION_SOURCES, type NormalizedFinancialState } from "@sochle/domain";
+import {
+  connections,
+  createSochleDatabase,
+  DecisionRepository,
+  FinancialRepository,
+} from "@sochle/db";
 
 export const e2eDatabaseUrl =
   process.env.E2E_DATABASE_URL ??
@@ -63,6 +68,81 @@ export async function seedLiveDatabase(): Promise<void> {
         type: "large_untagged_transaction",
       },
     ]);
+  } finally {
+    await database.close();
+  }
+}
+
+function addDays(date: Date, days: number): string {
+  const result = new Date(date);
+  result.setUTCDate(result.getUTCDate() + days);
+  return result.toISOString().slice(0, 10);
+}
+
+export async function seedDecisionDatabase(): Promise<void> {
+  const database = createSochleDatabase(e2eDatabaseUrl);
+  try {
+    await database.db.delete(connections);
+    const financialRepository = new FinancialRepository(database.db);
+    const decisionRepository = new DecisionRepository(database.db);
+    const connection = await financialRepository.ensureConnection("fold");
+    const now = new Date();
+    const refreshedAt = new Date(now.getTime() - 60 * 60 * 1_000).toISOString();
+    const decisionState: NormalizedFinancialState = {
+      accounts: [],
+      asOf: now.toISOString(),
+      cardObligations: { currency: "INR", minor: 10_000_00 },
+      exclusions: [],
+      expectedIncome: [],
+      investmentContext: { mutualFunds: null, netWorth: null, stocks: null },
+      liquidCash: { currency: "INR", minor: 150_000_00 },
+      observedMonthlySpending: { currency: "INR", minor: 40_000_00 },
+      reconciliation: [],
+      sourceFreshness: REQUIRED_DECISION_SOURCES.map((source) => ({
+        refreshedAt,
+        source,
+        status: "fresh",
+      })),
+      transactions: [],
+      upcomingObligations: [
+        {
+          amount: { currency: "INR", minor: 20_000_00 },
+          budgetTreatment: "inside_essential_budget",
+          certainty: "confirmed",
+          dueOn: addDays(now, 3),
+          id: "e2e-essential",
+          name: "Synthetic essential bill",
+          source: "recurring_expense",
+        },
+        {
+          amount: { currency: "INR", minor: 10_000_00 },
+          budgetTreatment: "additional",
+          certainty: "confirmed",
+          dueOn: addDays(now, 5),
+          id: "e2e-card",
+          name: "Synthetic card bill",
+          source: "credit_card",
+        },
+      ],
+    };
+    await financialRepository.saveSnapshot(connection.id, decisionState, "e2e-decision-snapshot");
+    await decisionRepository.createRuleSet(connection.id, {
+      essentialMonthlySpending: { currency: "INR", minor: 40_000_00 },
+      forecastHorizon: { days: 30, kind: "rolling_days" },
+      largePurchaseThreshold: { currency: "INR", minor: 10_000_00 },
+      materiality: {
+        absoluteCap: { currency: "INR", minor: 5_000_00 },
+        purchaseRatioBps: 1_000,
+      },
+      minimumBuffer: { currency: "INR", minor: 25_000_00 },
+      monthlyInvestmentTarget: { currency: "INR", minor: 25_000_00 },
+      salary: {
+        amount: { currency: "INR", minor: 0 },
+        confirmed: true,
+        dayOfMonth: 31,
+      },
+      version: 1,
+    });
   } finally {
     await database.close();
   }

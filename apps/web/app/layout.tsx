@@ -18,6 +18,10 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
             सोचle.
           </Link>
           <nav>
+            <Link href="/today">Today</Link>
+            <Link href="/check">Check</Link>
+            <Link href="/rules">Rules</Link>
+            <Link href="/decisions">Decisions</Link>
             <Link href="/connections">Data</Link>
             <Link href="/money-inbox">Money Inbox</Link>
           </nav>
