@@ -24,6 +24,15 @@ export type SourceFreshness = {
   status: "fresh" | "aging" | "stale" | "missing";
 };
 
+export type ExpectedIncome = {
+  amount: Money;
+  certainty: "confirmed" | "estimated";
+  dueOn: string;
+  id: string;
+  name: string;
+  source: "salary" | "other";
+};
+
 export type AccountExclusion = {
   sourceAccountId: string;
   reason: "user_excluded" | "passively_tracked" | "pending_connection" | string;
@@ -31,6 +40,7 @@ export type AccountExclusion = {
 
 export type UpcomingObligation = {
   amount: Money;
+  budgetTreatment: "inside_essential_budget" | "additional";
   certainty: "confirmed" | "estimated";
   dueOn: string;
   id: string;
@@ -75,6 +85,7 @@ export type NormalizedFinancialState = {
   asOf: string;
   cardObligations: Money;
   exclusions: AccountExclusion[];
+  expectedIncome: ExpectedIncome[];
   investmentContext: {
     mutualFunds: Money | null;
     netWorth: Money | null;

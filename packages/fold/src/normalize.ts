@@ -148,6 +148,7 @@ export function normalizeFoldSnapshot(
     return [
       {
         amount: toMoney(card.outstanding),
+        budgetTreatment: "additional",
         certainty: "confirmed",
         dueOn: cycle.payment_due_date,
         id: `card:${card.id}`,
@@ -164,6 +165,7 @@ export function normalizeFoldSnapshot(
     return [
       {
         amount: toMoney(rupees),
+        budgetTreatment: "additional",
         certainty: cycle.expected_amount === null ? "estimated" : "confirmed",
         dueOn: cycle.due_date,
         id: cycle.id,
@@ -190,6 +192,7 @@ export function normalizeFoldSnapshot(
       return [
         {
           amount: toMoney(rupees),
+          budgetTreatment: "additional",
           certainty: "estimated",
           dueOn: expense.next_due_date,
           id: `recurring:${expense.id}`,
@@ -261,6 +264,7 @@ export function normalizeFoldSnapshot(
     asOf: syncedAt,
     cardObligations,
     exclusions,
+    expectedIncome: [],
     investmentContext: {
       mutualFunds: toMoney(mutualFunds.total_current_value),
       netWorth: toMoney(netWorth.total),

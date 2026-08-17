@@ -57,12 +57,14 @@ describe("normalizeFoldSnapshot", () => {
 
     expect(state.upcomingObligations).toContainEqual({
       amount: { currency: "INR", minor: 250_000 },
+      budgetTreatment: "additional",
       certainty: "confirmed",
       dueOn: "2026-08-25",
       id: "demo_cycle_1",
       name: "Demo Subscription",
       source: "recurring_expense",
     });
+    expect(state.expectedIncome).toEqual([]);
     expect(state.sourceFreshness).toContainEqual({
       refreshedAt: "2026-08-17T06:00:00.000Z",
       source: "total_balance",

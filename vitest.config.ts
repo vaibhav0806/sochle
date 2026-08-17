@@ -7,6 +7,7 @@ export default defineConfig({
       include: [
         "packages/contracts/src/**/*.ts",
         "packages/db/src/**/*.ts",
+        "packages/domain/src/**/*.ts",
         "packages/fixtures/src/**/*.ts",
         "packages/fold/src/**/*.ts",
       ],

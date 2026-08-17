@@ -21,6 +21,7 @@ const snapshot: NormalizedFinancialState = {
   asOf: "2026-08-17T06:30:00.000Z",
   cardObligations: { currency: "INR", minor: 0 },
   exclusions: [],
+  expectedIncome: [],
   investmentContext: { mutualFunds: null, netWorth: null, stocks: null },
   liquidCash: { currency: "INR", minor: 250_000_00 },
   observedMonthlySpending: { currency: "INR", minor: 35_000_00 },

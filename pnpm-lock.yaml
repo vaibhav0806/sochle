@@ -100,7 +100,11 @@ importers:
         specifier: ^0.31.8
         version: 0.31.10
 
-  packages/domain: {}
+  packages/domain:
+    dependencies:
+      zod:
+        specifier: ^4.3.5
+        version: 4.4.3
 
   packages/fixtures:
     dependencies:
