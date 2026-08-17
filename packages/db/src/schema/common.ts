@@ -60,4 +60,6 @@ export const auditEventType = pgEnum("audit_event_type", [
   "intent_status_changed",
   "export_created",
   "deletion_initiated",
+  "extension_paired",
+  "extension_revoked",
 ]);

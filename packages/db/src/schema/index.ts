@@ -4,6 +4,8 @@ export * from "./common";
 export * from "./connections";
 export * from "./data-issues";
 export * from "./decisions";
+export * from "./extension-pairing-requests";
+export * from "./extension-pairings";
 export * from "./purchase-intents";
 export * from "./rule-sets";
 export * from "./snapshots";

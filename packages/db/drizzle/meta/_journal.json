@@ -29,6 +29,13 @@
       "when": 1786964730783,
       "tag": "0003_decision-core",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1786995441289,
+      "tag": "0004_extension-pairings",
+      "breakpoints": true
     }
   ]
 }
