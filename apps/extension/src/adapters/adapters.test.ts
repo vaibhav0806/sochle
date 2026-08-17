@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 
-import type { ExtractedProduct } from "@sochle/contracts";
+import type { ExtractedProduct } from "@sochle/contracts/browser";
 import { Window } from "happy-dom";
 import { describe, expect, it } from "vitest";
 

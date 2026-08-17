@@ -1,4 +1,4 @@
-import type { ExtractedProduct } from "@sochle/contracts";
+import type { ExtractedProduct } from "@sochle/contracts/browser";
 
 import { extractProduct } from "../adapters";
 

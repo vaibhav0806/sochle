@@ -1,4 +1,4 @@
-import { extractedProductSchema } from "@sochle/contracts";
+import { extractedProductSchema } from "@sochle/contracts/browser";
 
 import type { CommerceAdapter } from "./types";
 import { canonicalProductUrl, currentPrices, extractionConfidence, normalizedText } from "./types";

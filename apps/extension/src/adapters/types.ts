@@ -1,4 +1,4 @@
-import type { ExtractedProduct, Merchant } from "@sochle/contracts";
+import type { ExtractedProduct, Merchant } from "@sochle/contracts/browser";
 
 import { parseInrPrice } from "./inr";
 
