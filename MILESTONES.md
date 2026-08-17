@@ -220,7 +220,7 @@ function evaluatePurchase(input: {
 - [ ] Build Today with liquid cash, obligations, safe-to-spend, freshness, and blocking issues.
 - [ ] Build the Decisions list with status, verdict, price, confidence, and links to immutable detail.
 - [ ] Add authenticated data export and deletion; deletion removes Fold authorization, normalized data, corrections, rules, decisions, and audit records.
-- [ ] Generate explanation copy from deterministic templates; defer model-generated explanations until templates prove insufficient.
+- [ ] Generate explanation copy from versioned deterministic templates with Sochle's concise English-first Hinglish personality, varied by verdict and confidence; preserve factual labels and guardrails, and defer model-generated explanations until templates prove insufficient.
 - [ ] Add table-driven tests for all seven verdicts and every boundary around zero headroom and the minimum buffer.
 - [ ] Add adversarial cases for transfers, card repayments, salary timing, rent variance, refunds, stale sources, uncertain merchants, and duplicate equal-price charges.
 - [ ] Benchmark the pure evaluation path and cached-snapshot API path.
