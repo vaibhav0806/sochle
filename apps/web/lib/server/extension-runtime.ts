@@ -4,6 +4,7 @@ import { DEFAULT_RULES } from "@sochle/domain";
 
 import { getDecisionRepository, getExtensionRepository, getRepository } from "./database";
 import { getServerEnv } from "./env";
+import { createExtensionDecisionService } from "./extension-decision-service";
 import { createExtensionPairingService } from "./extension-pairing-service";
 
 export function getExtensionRuntime() {
@@ -20,6 +21,12 @@ export function getExtensionRuntime() {
     return null;
   }
   return {
+    decisionService: createExtensionDecisionService({
+      appOrigin: serverEnv.SOCHLE_APP_URL,
+      decisionRepository,
+      financialRepository,
+      now: () => new Date(),
+    }),
     decisionRepository,
     financialRepository,
     service: createExtensionPairingService({

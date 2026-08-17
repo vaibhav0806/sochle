@@ -1,5 +1,9 @@
 import { calculateTodayPosition, evaluatePurchase, type DecisionIssue } from "@sochle/domain";
-import type { DecisionRepository, FinancialRepository } from "@sochle/db";
+import type {
+  CreatePurchaseDecisionInput,
+  DecisionRepository,
+  FinancialRepository,
+} from "@sochle/db";
 
 export type DecisionPrerequisite = "rules" | "snapshot";
 
@@ -57,6 +61,7 @@ export function createDecisionService(
       connectionId: string;
       description: string;
       evaluatedAt: string;
+      extensionContext?: NonNullable<CreatePurchaseDecisionInput["extensionContext"]>;
       priceMinor: number;
     }) {
       const { issues, plannedPurchases, ruleSet, snapshot } = await loadPrerequisites(
@@ -75,6 +80,9 @@ export function createDecisionService(
         auditBundle: { input: result.inputs, result },
         connectionId: input.connectionId,
         description: input.description,
+        ...(input.extensionContext === undefined
+          ? {}
+          : { extensionContext: input.extensionContext }),
         priceMinor: input.priceMinor,
         result,
         ruleSetId: ruleSet.id,

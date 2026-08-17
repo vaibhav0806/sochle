@@ -387,7 +387,7 @@ export class DecisionRepository {
   ): Promise<{ latestDecisionId: string; status: typeof status }> {
     return this.db.transaction(async (transaction) => {
       const [intent] = await transaction
-        .select({ id: purchaseIntents.id })
+        .select({ id: purchaseIntents.id, status: purchaseIntents.status })
         .from(purchaseIntents)
         .where(
           and(
@@ -408,6 +408,7 @@ export class DecisionRepository {
         .orderBy(desc(decisions.createdAt), desc(decisions.id))
         .limit(1);
       if (latestDecision === undefined) throw new Error("Purchase intent has no decision");
+      if (intent.status === status) return { latestDecisionId: latestDecision.id, status };
 
       await transaction
         .update(purchaseIntents)
