@@ -131,7 +131,7 @@ The long-term product may evaluate purchases, subscriptions, travel, investment 
 1. Implement Fold remote MCP authentication and secure token handling.
 2. Normalize heterogeneous Fold responses into a stable internal financial schema.
 3. Build a deterministic, testable affordability and forecast engine.
-4. Extract price/product information reliably from at least two commerce websites.
+4. Extract price/product information reliably from Amazon India, Flipkart and Myntra.
 5. Preserve an audit trail explaining every input and rule behind every verdict.
 6. Keep financial data private and minimize third-party model exposure.
 
@@ -489,7 +489,7 @@ Corrections are stored in Sochle's own database because Fold MCP is read-only.
 
 #### Extension
 
-- Support Amazon India and Flipkart product pages.
+- Support Amazon India, Flipkart and Myntra product pages.
 - Extract product name and price using site-specific adapters.
 - Allow manual price override.
 - Display decision card without obstructing the page.
@@ -976,6 +976,7 @@ The MVP is not working if, after four weeks:
 
 - Amazon India adapter.
 - Flipkart adapter.
+- Myntra adapter.
 - Decision card.
 - Manual correction.
 - Save and outcome actions.
@@ -1112,7 +1113,7 @@ These do not block initial engineering but must be resolved during Milestones 1â
 - [ ] Verdict calculations reviewed against manual spreadsheet cases.
 - [ ] Confidence and stale-data states implemented.
 - [ ] Money Inbox resolves material data issues.
-- [ ] Amazon and Flipkart extraction validated.
+- [ ] Amazon India, Flipkart and Myntra extraction validated.
 - [ ] Decision history and outcome recording work.
 
 ### Security
@@ -1149,4 +1150,3 @@ These do not block initial engineering but must be resolved during Milestones 1â
 6. Validate the â‚¹45,000 Garmin scenario and at least ten adversarial cases.
 7. Build the Amazon India extension adapter and decision card.
 8. Begin four-week personal dogfooding before expanding scope.
-

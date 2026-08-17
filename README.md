@@ -18,7 +18,7 @@ The first release is a private, single-user browser extension and companion web 
 
 ## Initial product
 
-- Browser extension for Amazon India and Flipkart product pages.
+- Browser extension for Amazon India, Flipkart, and Myntra product pages.
 - Decision card with affordability, safe-to-spend, projected liquidity, and confidence.
 - Companion web app for rules, decisions, connection status, and the Money Inbox.
 - Fold MCP integration for balances, cards, transactions, spending, and recurring expenses.
@@ -44,7 +44,7 @@ The planned stack is TypeScript, pnpm workspaces, Next.js, WXT, PostgreSQL, Driz
 | 0. Foundation | Secure monorepo, contracts, CI, and synthetic demo mode |
 | 1. Financial foundation | Fold data normalized, persisted, reconciled, and freshness-labelled |
 | 2. Decision core | Manual purchases receive deterministic, explainable verdicts |
-| 3. Point of purchase | Amazon and Flipkart pages produce saved decisions end to end |
+| 3. Point of purchase | Amazon, Flipkart, and Myntra pages produce saved decisions end to end |
 | 4. Personal beta | Wait-until-payday, outcomes, weekly review, and dogfooding metrics |
 | 5. Closed loop | Receipts, transactions, refunds, and predicted-versus-actual impact |
 

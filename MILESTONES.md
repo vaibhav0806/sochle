@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use `superpowers:subagent-driven-development` (recommended) or `superpowers:executing-plans` to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Build a private, single-user product that produces a trustworthy affordability decision from an Amazon India or Flipkart product page in under five seconds when a fresh financial snapshot is available.
+**Goal:** Build a private, single-user product that produces a trustworthy affordability decision from an Amazon India, Flipkart, or Myntra product page in under five seconds when a fresh financial snapshot is available.
 
 **Architecture:** Use a pnpm TypeScript monorepo with a Next.js web/API application and a WXT browser extension. Keep Fold access, normalization, persistence, and the pure decision engine behind explicit package boundaries; PostgreSQL stores encrypted connection references, normalized snapshots, corrections, rules, purchase intents, and immutable decision evidence.
 
@@ -242,7 +242,7 @@ function evaluatePurchase(input: {
 
 **Files:**
 
-- Create `apps/extension/src/adapters/types.ts`, `amazon-in.ts`, `flipkart.ts`
+- Create `apps/extension/src/adapters/types.ts`, `amazon-in.ts`, `flipkart.ts`, `myntra.ts`
 - Create `apps/extension/src/content/index.tsx`, `background.ts`, `components/decision-card.tsx`
 - Create `packages/contracts/src/purchases.ts`, `decisions.ts`
 - Create `apps/web/app/api/purchase-intents/route.ts`, `apps/web/app/api/decisions/route.ts`
@@ -253,7 +253,7 @@ function evaluatePurchase(input: {
 ```ts
 type ExtractedProduct = {
   title: string;
-  merchant: "amazon.in" | "flipkart.com";
+  merchant: "amazon.in" | "flipkart.com" | "myntra.com";
   price: Money;
   canonicalUrl: string;
   confidence: "high" | "medium" | "low";
@@ -267,10 +267,11 @@ interface CommerceAdapter {
 
 ### Work
 
-- [ ] Restrict Manifest V3 host permissions to Amazon India, Flipkart, and the configured Sochle API origin.
+- [ ] Restrict Manifest V3 host permissions to Amazon India, Flipkart, Myntra, and the configured Sochle API origin.
 - [ ] Implement locale-aware INR parsing using integer minor units; reject crossed-out MRP when a current sale price exists.
 - [ ] Implement Amazon India extraction against saved product-page variants.
 - [ ] Implement Flipkart extraction against saved product-page variants.
+- [ ] Implement Myntra extraction against saved product-page variants.
 - [ ] Observe dynamic page changes without repeatedly injecting controls or issuing calculations.
 - [ ] Add a passive, dismissible Sochle control for products at or above the configured threshold.
 - [ ] Add manual title and price correction before evaluation.
@@ -281,9 +282,9 @@ interface CommerceAdapter {
 - [ ] Add DOM fixture tests for sale price versus MRP, multiple sellers, comma formatting, missing prices, and dynamic updates.
 - [ ] Add an end-to-end test from a local commerce fixture through evaluation to a persisted decision.
 
-**Verification:** Automated extraction fixtures pass for both merchants, content scripts contain no Fold credentials or full financial snapshots, and extension permissions contain no unrelated hosts.
+**Verification:** Automated extraction fixtures pass for all three merchants, content scripts contain no Fold credentials or full financial snapshots, and extension permissions contain no unrelated hosts.
 
-**Exit criterion:** A live Amazon India and Flipkart product page can each produce a saved decision and open its audit detail end to end.
+**Exit criterion:** A live Amazon India, Flipkart, and Myntra product page can each produce a saved decision and open its audit detail end to end.
 
 **Suggested commits:**
 
@@ -369,7 +370,7 @@ The private MVP may be considered complete only when all of these are true:
 - [ ] Every formula, verdict boundary, confidence transition, and source-normalization branch has deterministic tests.
 - [ ] A fresh-snapshot decision has median end-to-end latency below five seconds.
 - [ ] Fold unavailability returns a labelled cached result or refuses a verdict; it never fabricates current data.
-- [ ] Amazon India and Flipkart extraction pass saved variants and live smoke tests.
+- [ ] Amazon India, Flipkart, and Myntra extraction pass saved variants and live smoke tests.
 - [ ] Tokens and raw financial payloads are absent from browser bundles, logs, analytics, fixtures, and public demos.
 - [ ] Data export and deletion are tested.
 - [ ] No P1/P2 feature has displaced work required for the point-of-purchase decision.
