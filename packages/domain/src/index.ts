@@ -24,3 +24,19 @@ export type {
   HeadroomInput,
   Headrooms,
 } from "./forecast";
+export {
+  assessConfidence,
+  materialityThresholdMinor,
+  REQUIRED_DECISION_SOURCES,
+} from "./confidence";
+export type {
+  ConfidenceAssessment,
+  ConfidenceInput,
+  ConfidenceReason,
+  DecisionIssue,
+  SensitivityResult,
+} from "./confidence";
+export { buildExplanation } from "./explanations";
+export type { DecisionExplanation, ExplanationInput } from "./explanations";
+export { selectFinancialVerdict } from "./verdict";
+export type { FinancialVerdict, FinancialVerdictInput, Verdict } from "./verdict";
