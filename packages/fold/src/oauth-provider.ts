@@ -4,6 +4,7 @@ import type {
   OAuthClientInformationContext,
   OAuthClientMetadata,
   OAuthClientProvider,
+  OAuthDiscoveryState,
   StoredOAuthClientInformation,
   StoredOAuthTokens,
 } from "@modelcontextprotocol/client";
@@ -11,6 +12,7 @@ import type {
 export type FoldOAuthState = {
   clientInformationByIssuer: Record<string, StoredOAuthClientInformation>;
   codeVerifier: string | null;
+  discoveryState?: OAuthDiscoveryState;
   latestIssuer: string | null;
   oauthState: string | null;
   tokensByIssuer: Record<string, StoredOAuthTokens>;
@@ -128,5 +130,15 @@ export class FoldOAuthProvider implements OAuthClientProvider {
     const state = await this.load();
     if (state.codeVerifier === null) throw new Error("OAuth code verifier is missing");
     return state.codeVerifier;
+  }
+
+  async saveDiscoveryState(discoveryState: OAuthDiscoveryState): Promise<void> {
+    const state = await this.load();
+    await this.options.store.save({ ...state, discoveryState });
+  }
+
+  async discoveryState(): Promise<OAuthDiscoveryState | undefined> {
+    const state = await this.load();
+    return state.discoveryState;
   }
 }

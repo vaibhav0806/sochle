@@ -1,4 +1,4 @@
-import type { StoredOAuthTokens } from "@modelcontextprotocol/client";
+import type { OAuthDiscoveryState, StoredOAuthTokens } from "@modelcontextprotocol/client";
 import { describe, expect, it } from "vitest";
 
 import { FoldOAuthProvider } from "./oauth-provider";
@@ -43,6 +43,28 @@ describe("FoldOAuthProvider", () => {
     expect(await restored.tokens()).toEqual(tokens);
     await expect(restored.consumeState(state)).resolves.toBeUndefined();
     await expect(restored.consumeState(state)).rejects.toThrow("OAuth state mismatch");
+  });
+
+  it("persists OAuth discovery state across the redirect round trip", async () => {
+    const store = memoryStore();
+    const provider = new FoldOAuthProvider({
+      onRedirect() {},
+      redirectUrl: "http://localhost:3000/api/fold/callback",
+      store,
+    });
+    const discoveryState: OAuthDiscoveryState = {
+      authorizationServerUrl: "https://auth.fold.money",
+      resourceMetadataUrl: "https://fold.money/.well-known/oauth-protected-resource",
+    };
+
+    await provider.saveDiscoveryState(discoveryState);
+
+    const restored = new FoldOAuthProvider({
+      onRedirect() {},
+      redirectUrl: "http://localhost:3000/api/fold/callback",
+      store,
+    });
+    await expect(restored.discoveryState()).resolves.toEqual(discoveryState);
   });
 
   it("hands the authorization URL to the application", async () => {
