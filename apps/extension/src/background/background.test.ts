@@ -218,4 +218,26 @@ describe("background message boundary", () => {
       handler({ body: { steal: true }, method: "POST", operation: "proxy", url: "https://x" })
     ).rejects.toThrow();
   });
+
+  it("reports an unopened check when the current tab has no content listener", async () => {
+    const handler = createBackgroundMessageHandler({
+      api: {
+        createDecision: vi.fn(),
+        disconnect: vi.fn(),
+        getSession: vi.fn(async () => ({ appUrl: apiOrigin, kind: "unpaired" as const })),
+        setOutcome: vi.fn(),
+      },
+      pair: vi.fn(),
+      tabs: {
+        queryActive: async () => ({ id: 42, url: "https://www.amazon.in/dp/SYNTHETIC" }),
+        sendMessage: vi.fn(async () => {
+          throw new Error("Could not establish connection. Receiving end does not exist.");
+        }),
+      },
+    });
+
+    await expect(handler({ operation: "openCurrentProductCheck" })).resolves.toEqual({
+      opened: false,
+    });
+  });
 });

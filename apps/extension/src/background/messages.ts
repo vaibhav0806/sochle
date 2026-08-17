@@ -42,8 +42,12 @@ export function createBackgroundMessageHandler(options: {
         if (tab?.id === undefined || tab.url === undefined || adapterForUrl(tab.url) === null) {
           return { opened: false as const };
         }
-        await options.tabs.sendMessage(tab.id, { operation: "showManualCheck" });
-        return { opened: true as const };
+        try {
+          await options.tabs.sendMessage(tab.id, { operation: "showManualCheck" });
+          return { opened: true as const };
+        } catch {
+          return { opened: false as const };
+        }
       }
     }
   };
