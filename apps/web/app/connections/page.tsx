@@ -3,6 +3,8 @@ import Link from "next/link";
 import { requireOwnerPage } from "../../lib/server/auth";
 import { getRepository } from "../../lib/server/database";
 import { getServerEnv } from "../../lib/server/env";
+import { createPairingCsrfToken } from "../../lib/server/extension-auth";
+import { getExtensionRuntime } from "../../lib/server/extension-runtime";
 import { AutomaticSync } from "./automatic-sync";
 
 export const dynamic = "force-dynamic";
@@ -21,6 +23,11 @@ export default async function ConnectionsPage({
   const { result } = await searchParams;
   const repository = getRepository();
   const connection = repository === null ? null : await repository.getConnection("fold");
+  const extensionRuntime = getExtensionRuntime();
+  const pairings =
+    connection === null || extensionRuntime === null
+      ? []
+      : await extensionRuntime.service.listOwnerPairings(connection.id);
   const snapshot = connection === null ? null : await repository!.getLatestSnapshot(connection.id);
   const automaticSyncDue =
     !serverEnv.SOCHLE_DEMO_MODE &&
@@ -100,6 +107,50 @@ export default async function ConnectionsPage({
               </button>
             </form>
           </div>
+        )}
+      </section>
+      <section className="card stack">
+        <div className="row">
+          <div>
+            <h2>Paired browsers</h2>
+            <p className="muted">Browsers allowed to request purchase decisions.</p>
+          </div>
+          <span className="status">
+            {pairings.filter((pairing) => pairing.revokedAt === null).length} active
+          </span>
+        </div>
+        {pairings.length === 0 ? (
+          <p className="muted">No extension has been paired yet.</p>
+        ) : (
+          <ul className="freshness">
+            {pairings.map((pairing) => (
+              <li key={pairing.id}>
+                <div>
+                  <strong>{pairing.extensionOrigin}</strong>
+                  <br />
+                  <span className="muted">Paired {displayDate(pairing.createdAt)}</span>
+                </div>
+                {pairing.revokedAt === null && extensionRuntime !== null ? (
+                  <form action={`/api/extension/pairings/${pairing.id}/revoke`} method="post">
+                    <input
+                      name="csrfToken"
+                      type="hidden"
+                      value={createPairingCsrfToken(
+                        extensionRuntime.sessionSecret,
+                        pairing.id,
+                        new Date(Date.now() + 60 * 60 * 1000)
+                      )}
+                    />
+                    <button className="secondary" type="submit">
+                      Revoke
+                    </button>
+                  </form>
+                ) : (
+                  <span className="status disconnected">revoked</span>
+                )}
+              </li>
+            ))}
+          </ul>
         )}
       </section>
       <p>

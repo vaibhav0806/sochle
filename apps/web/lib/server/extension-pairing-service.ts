@@ -23,6 +23,8 @@ function safePairing(pairing: ExtensionPairingRow) {
 
 export function createExtensionPairingService(options: PairingServiceOptions) {
   return {
+    appUrl: options.appUrl,
+
     async createRequest(input: {
       callbackUrl: string;
       credentialHash: string;
