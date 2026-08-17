@@ -37,6 +37,7 @@ function verifyCallback(returnedUrl: string | undefined, callbackUrl: string, re
 export function createPairingCoordinator(options: {
   apiOrigin: string;
   credential: CredentialStore;
+  extensionOrigin?: string;
   fetch: FetchLike;
   identity: IdentityApi;
   randomFill(bytes: Uint8Array): void;
@@ -55,7 +56,10 @@ export function createPairingCoordinator(options: {
             callbackUrl,
             credentialHash: await sha256(rawCredential),
           }),
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            ...(options.extensionOrigin === undefined ? {} : { Origin: options.extensionOrigin }),
+          },
           method: "POST",
         }
       );

@@ -26,11 +26,13 @@ function parseOutcomeResponse(input: unknown): { status: PurchaseOutcome } {
 export function createApiClient(options: {
   apiOrigin: string;
   credential: CredentialStore;
+  extensionOrigin?: string;
   fetch: FetchLike;
 }) {
   async function fetchWithCredential(path: string, init: RequestInit, rawCredential: string) {
     const headers = new Headers(init.headers);
     headers.set("Authorization", `Bearer ${rawCredential}`);
+    if (options.extensionOrigin !== undefined) headers.set("Origin", options.extensionOrigin);
     return options.fetch(new URL(path, options.apiOrigin), { ...init, headers });
   }
 

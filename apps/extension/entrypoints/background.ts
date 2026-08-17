@@ -20,10 +20,17 @@ export default defineBackground(() => {
     },
   };
   const apiOrigin = import.meta.env.WXT_SOCHLE_API_ORIGIN ?? "http://localhost:3000";
-  const api = createApiClient({ apiOrigin, credential, fetch });
+  const extensionOrigin = `chrome-extension://${browser.runtime.id}`;
+  const api = createApiClient({
+    apiOrigin,
+    credential,
+    extensionOrigin,
+    fetch: globalThis.fetch.bind(globalThis),
+  });
   const pairing = createPairingCoordinator({
     apiOrigin,
     credential,
+    extensionOrigin,
     fetch,
     identity: {
       getRedirectURL: (path) => browser.identity.getRedirectURL(path),
