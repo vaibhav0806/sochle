@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 
-type PurchaseStatus = "considering" | "planned" | "purchased" | "skipped";
+type PurchaseStatus =
+  "considering" | "waiting" | "planned" | "purchased" | "skipped" | "not_relevant";
 
 export function StatusForm({
   intentId,
@@ -25,9 +26,11 @@ export function StatusForm({
           onChange={(event) => setSelected(event.target.value as PurchaseStatus)}
         >
           <option value="considering">Considering</option>
+          <option value="waiting">Waiting</option>
           <option value="planned">Planned</option>
           <option value="purchased">Purchased</option>
           <option value="skipped">Skipped</option>
+          <option value="not_relevant">Not relevant</option>
         </select>
       </label>
       {selected === "planned" && (

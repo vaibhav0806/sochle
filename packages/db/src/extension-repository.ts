@@ -10,6 +10,7 @@ export type CreatePairingRequestInput = {
   expiresAt: Date;
   extensionOrigin: string;
 };
+export type ExtensionPairingRow = typeof extensionPairings.$inferSelect;
 
 export class ExtensionRepository {
   constructor(private readonly db: SochleDatabase) {}

@@ -5,7 +5,7 @@ export type { SochleDatabase } from "./database";
 export { FinancialRepository } from "./repository";
 export { DecisionRepository } from "./decision-repository";
 export { ExtensionRepository } from "./extension-repository";
-export type { CreatePairingRequestInput } from "./extension-repository";
+export type { CreatePairingRequestInput, ExtensionPairingRow } from "./extension-repository";
 export type {
   AppendDecisionInput,
   CreatePurchaseDecisionInput,
