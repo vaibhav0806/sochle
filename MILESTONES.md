@@ -77,15 +77,15 @@ Dependency direction is `apps -> contracts/domain/fold/db`, `fold -> contracts/d
 
 ### Work
 
-- [ ] Scaffold pnpm workspaces with `apps/web`, `apps/extension`, and the five shared packages.
-- [ ] Configure strict TypeScript, formatting, linting, Vitest, and consistent package scripts.
-- [ ] Scaffold the Next.js web app and WXT Manifest V3 extension with no product features.
-- [ ] Add PostgreSQL and Drizzle configuration; verify an empty migration applies to a disposable database.
-- [ ] Define the environment schema with Zod and fail startup when required secrets are absent outside demo/test mode.
-- [ ] Add a redacting structured logger and tests proving configured sensitive keys and nested values are removed.
-- [ ] Add synthetic demo fixtures containing no copied Fold values or identifiers.
-- [ ] Add CI for install, lint, typecheck, unit tests, build, dependency review, and secret scanning.
-- [ ] Record system boundaries and financial-data handling decisions in the two architecture notes.
+- [x] Scaffold pnpm workspaces with `apps/web`, `apps/extension`, and the five shared packages.
+- [x] Configure strict TypeScript, formatting, linting, Vitest, and consistent package scripts.
+- [x] Scaffold the Next.js web app and WXT Manifest V3 extension with no product features.
+- [x] Add PostgreSQL and Drizzle configuration; verify an empty migration applies to a disposable database.
+- [x] Define the environment schema with Zod and fail startup when required secrets are absent outside demo/test mode.
+- [x] Add a redacting structured logger and tests proving configured sensitive keys and nested values are removed.
+- [x] Add synthetic demo fixtures containing no copied Fold values or identifiers.
+- [x] Add CI for install, lint, typecheck, unit tests, build, dependency review, and secret scanning.
+- [x] Record system boundaries and financial-data handling decisions in the two architecture notes.
 
 **Verification:** A clean clone passes `pnpm install --frozen-lockfile && pnpm lint && pnpm typecheck && pnpm test && pnpm build`; demo mode boots without Fold credentials.
 
@@ -117,7 +117,8 @@ type NormalizedFinancialState = {
   liquidCash: Money;
   cardObligations: Money;
   upcomingObligations: Array<{ id: string; name: string; dueOn: string; amount: Money; certainty: "confirmed" | "estimated" }>;
-  spending: { essentialMonthly: Money; observedMonthly: Money };
+  observedMonthlySpending: Money;
+  reconciliation: Array<{ headline: "liquid_cash" | "card_obligations"; headlineMinor: number; projectedMinor: number; differenceMinor: number; status: "matched" | "mismatch" }>;
   sourceFreshness: Array<{ source: string; refreshedAt: string | null; status: "fresh" | "aging" | "stale" | "missing" }>;
   exclusions: Array<{ sourceId: string; reason: string }>;
 };
@@ -129,22 +130,22 @@ interface FinancialDataProvider {
 
 ### Work
 
-- [ ] Implement the server-only remote MCP authorization callback and encrypt the stored authorization reference with an application-managed key.
-- [ ] Wrap every consumed Fold response in a local Zod contract before normalization.
-- [ ] Integrate `get_total_balance`, `list_bank_accounts`, `list_credit_cards`, `list_transactions`, `get_spending_summary`, `list_recurring_expenses`, and `list_upcoming_recurring_cycles`.
-- [ ] Add contextual ingestion for `get_net_worth`, `get_net_worth_history`, `get_mf_portfolio_summary`, and `get_stocks_portfolio_summary`; never count investments as spendable cash.
-- [ ] Implement cursor walking for transaction and recurring-expense tools with stable filters and idempotent upserts by provider/source ID.
-- [ ] Integrate `get_transaction` for on-demand Money Inbox evidence without sending additional raw history to the client.
-- [ ] Normalize INR values to integer minor units and preserve raw source timestamps and exclusion reasons.
-- [ ] Handle parent/child credit-card relationships without double-counting shared outstanding amounts.
-- [ ] Persist immutable snapshots and separately upsert current account/transaction projections.
-- [ ] Reconcile normalized liquid cash against Fold's total balance and card obligations against eligible parent-card outstanding.
-- [ ] Create data issues for material untagged transactions, suspected transfers, likely card repayments, and stale/missing required sources.
-- [ ] Build the Connections screen with connection state, manual sync, last success, last failure, and per-source freshness.
-- [ ] Build the initial Money Inbox for large untagged transactions with classify, exclude, and ignore-once actions stored as Sochle corrections.
-- [ ] Add single-flight automatic refresh with a configurable minimum interval defaulting to 60 minutes, exponential failure backoff, and no overlapping syncs.
-- [ ] Add cached-snapshot fallback that never labels cached data as current.
-- [ ] Capture sanitized response fixtures covering success, null fields, pending accounts, excluded accounts, add-on cards, pagination, and disconnected Fold.
+- [x] Implement the server-only remote MCP authorization callback and encrypt the stored authorization reference with an application-managed key.
+- [x] Wrap every consumed Fold response in a local Zod contract before normalization.
+- [x] Integrate `get_total_balance`, `list_bank_accounts`, `list_credit_cards`, `list_transactions`, `get_spending_summary`, `list_recurring_expenses`, and `list_upcoming_recurring_cycles`.
+- [x] Add contextual ingestion for `get_net_worth`, `get_net_worth_history`, `get_mf_portfolio_summary`, and `get_stocks_portfolio_summary`; never count investments as spendable cash.
+- [x] Implement cursor walking for transaction and recurring-expense tools with stable filters and idempotent upserts by provider/source ID.
+- [x] Integrate `get_transaction` for on-demand Money Inbox evidence without sending additional raw history to the client.
+- [x] Normalize INR values to integer minor units and preserve raw source timestamps and exclusion reasons.
+- [x] Handle parent/child credit-card relationships without double-counting shared outstanding amounts.
+- [x] Persist immutable snapshots and separately upsert current account/transaction projections.
+- [x] Reconcile normalized liquid cash against Fold's total balance and card obligations against eligible parent-card outstanding.
+- [x] Create data issues for material untagged transactions, suspected transfers, likely card repayments, and stale/missing required sources.
+- [x] Build the Connections screen with connection state, manual sync, last success, last failure, and per-source freshness.
+- [x] Build the initial Money Inbox for large untagged transactions with classify, exclude, and ignore-once actions stored as Sochle corrections.
+- [x] Add single-flight automatic refresh with a configurable minimum interval defaulting to 60 minutes, exponential failure backoff, and no overlapping syncs.
+- [x] Add cached-snapshot fallback that never labels cached data as current.
+- [x] Capture sanitized response fixtures covering success, null fields, pending accounts, excluded accounts, add-on cards, pagination, and disconnected Fold.
 
 **Verification:** Contract tests accept the sanitized live shapes already observed for balances, accounts, cards, spending, recurring expenses, and upcoming cycles. Re-running a sync creates no duplicate transactions; a Fold outage returns the last snapshot with an explicit freshness downgrade.
 

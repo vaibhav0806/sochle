@@ -13,10 +13,40 @@ body {
   margin: 0;
 }
 
+header {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  margin: 0 auto;
+  max-width: 70rem;
+  padding: 1.25rem 1.5rem;
+}
+nav,
+.actions,
+.row {
+  align-items: center;
+  display: flex;
+  gap: 1rem;
+}
+nav a,
+a {
+  color: #315b42;
+  text-decoration: none;
+}
+.brand {
+  color: #172019;
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+}
+
 main {
   margin: 0 auto;
   max-width: 52rem;
   padding: 6rem 1.5rem;
+}
+.narrow {
+  max-width: 36rem;
 }
 
 h1 {
@@ -30,4 +60,149 @@ p {
   font-size: 1.125rem;
   line-height: 1.7;
   max-width: 42rem;
+}
+
+h2 {
+  margin: 0;
+}
+.eyebrow {
+  color: #80745c;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.card {
+  background: #fffdf8;
+  border: 1px solid #ddd6c5;
+  border-radius: 1rem;
+  padding: 1.5rem;
+}
+.stack {
+  display: grid;
+  gap: 1rem;
+}
+.row {
+  justify-content: space-between;
+}
+.muted {
+  font-size: 0.95rem;
+  margin: 0.25rem 0 0;
+}
+.notice {
+  background: #eee7d6;
+  border-radius: 0.65rem;
+  padding: 0.8rem 1rem;
+}
+.notice.error {
+  background: #f8dfdb;
+  color: #8b2b20;
+}
+.status {
+  background: #eee7d6;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  padding: 0.35rem 0.7rem;
+}
+.status.connected {
+  background: #d9efdf;
+  color: #1c6031;
+}
+.status.fresh {
+  background: #d9efdf;
+  color: #1c6031;
+}
+.status.matched {
+  background: #d9efdf;
+  color: #1c6031;
+}
+.status.mismatch {
+  background: #f8dfdb;
+  color: #8b2b20;
+}
+.status.aging {
+  background: #f4e8bb;
+  color: #795f00;
+}
+.status.stale,
+.status.missing {
+  background: #f8dfdb;
+  color: #8b2b20;
+}
+.freshness {
+  display: grid;
+  gap: 0.5rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.freshness li {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  text-transform: capitalize;
+}
+.status.error {
+  background: #f8dfdb;
+  color: #8b2b20;
+}
+button,
+.button-link,
+select,
+input {
+  border: 1px solid #315b42;
+  border-radius: 0.55rem;
+  font: inherit;
+  padding: 0.7rem 1rem;
+}
+button,
+.button-link {
+  background: #315b42;
+  color: white;
+  cursor: pointer;
+  display: inline-block;
+}
+button.secondary {
+  background: transparent;
+  color: #315b42;
+}
+button.quiet {
+  background: transparent;
+  border-color: transparent;
+  color: #526058;
+}
+input {
+  background: white;
+  width: 100%;
+}
+label,
+dt {
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+dl {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+}
+dl div {
+  display: grid;
+  gap: 0.2rem;
+}
+dd {
+  margin: 0;
+}
+pre {
+  overflow: auto;
+  white-space: pre-wrap;
+}
+
+@media (max-width: 36rem) {
+  nav {
+    display: none;
+  }
+  .actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
 }

@@ -82,6 +82,13 @@ export type NormalizedFinancialState = {
   };
   liquidCash: Money;
   observedMonthlySpending: Money;
+  reconciliation: Array<{
+    differenceMinor: number;
+    headline: "card_obligations" | "liquid_cash";
+    headlineMinor: number;
+    projectedMinor: number;
+    status: "matched" | "mismatch";
+  }>;
   sourceFreshness: SourceFreshness[];
   transactions: NormalizedTransaction[];
   upcomingObligations: UpcomingObligation[];

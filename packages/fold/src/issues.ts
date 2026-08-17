@@ -6,7 +6,12 @@ export type DetectedDataIssue = {
   relatedEntityId: string;
   relatedEntityType: "source" | "transaction";
   severity: "info" | "warning" | "blocking";
-  type: "large_untagged_transaction" | "missing_source" | "stale_source";
+  type:
+    | "large_untagged_transaction"
+    | "missing_source"
+    | "stale_source"
+    | "suspected_card_repayment"
+    | "suspected_transfer";
 };
 
 const decisionSources = new Set<FinancialSource>([
@@ -55,5 +60,30 @@ export function detectDataIssues(
     ];
   });
 
-  return [...transactionIssues, ...freshnessIssues];
+  const classificationIssues: DetectedDataIssue[] = state.transactions.flatMap((transaction) => {
+    if (
+      transaction.sochleClassification !== "transfer" &&
+      transaction.sochleClassification !== "credit_card_payment"
+    ) {
+      return [];
+    }
+    return [
+      {
+        details: {
+          detectedClassification: transaction.sochleClassification,
+          merchant: transaction.rawMerchant,
+        },
+        materialityMinor: transaction.amount.minor,
+        relatedEntityId: transaction.sourceTransactionId,
+        relatedEntityType: "transaction",
+        severity: "warning",
+        type:
+          transaction.sochleClassification === "transfer"
+            ? "suspected_transfer"
+            : "suspected_card_repayment",
+      },
+    ];
+  });
+
+  return [...transactionIssues, ...classificationIssues, ...freshnessIssues];
 }

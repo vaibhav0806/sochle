@@ -28,4 +28,35 @@ describe("detectDataIssues", () => {
       ])
     );
   });
+
+  it("queues suspected transfers and card repayments for confirmation", () => {
+    const state = normalizeFoldSnapshot(foldCoreResponses, "2026-08-17T06:30:00.000Z");
+    state.transactions.push(
+      {
+        ...state.transactions[0]!,
+        sochleClassification: "transfer",
+        sourceTransactionId: "suspected-transfer",
+      },
+      {
+        ...state.transactions[0]!,
+        sochleClassification: "credit_card_payment",
+        sourceTransactionId: "suspected-card-payment",
+      }
+    );
+
+    const issues = detectDataIssues(state, { largeTransactionMinor: 500_000 });
+
+    expect(issues).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          relatedEntityId: "suspected-transfer",
+          type: "suspected_transfer",
+        }),
+        expect.objectContaining({
+          relatedEntityId: "suspected-card-payment",
+          type: "suspected_card_repayment",
+        }),
+      ])
+    );
+  });
 });

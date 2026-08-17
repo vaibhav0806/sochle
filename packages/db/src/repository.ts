@@ -35,6 +35,15 @@ type IssueResolution =
 export class FinancialRepository {
   constructor(private readonly db: SochleDatabase) {}
 
+  async getConnection(provider: string) {
+    const [connection] = await this.db
+      .select()
+      .from(connections)
+      .where(eq(connections.provider, provider))
+      .limit(1);
+    return connection ?? null;
+  }
+
   async ensureConnection(provider: string) {
     await this.db.insert(connections).values({ provider }).onConflictDoNothing();
     const [connection] = await this.db
@@ -48,6 +57,16 @@ export class FinancialRepository {
     }
 
     return connection;
+  }
+
+  async setConnectionStatus(
+    connectionId: string,
+    status: "authorizing" | "connected" | "disconnected" | "error"
+  ): Promise<void> {
+    await this.db
+      .update(connections)
+      .set({ status, updatedAt: new Date() })
+      .where(eq(connections.id, connectionId));
   }
 
   async saveAuthorizationState<T>(connectionId: string, state: T, key: Buffer): Promise<void> {
@@ -324,6 +343,15 @@ export class FinancialRepository {
       .from(dataIssues)
       .where(and(eq(dataIssues.connectionId, connectionId), eq(dataIssues.status, "open")))
       .orderBy(desc(dataIssues.createdAt));
+  }
+
+  async getIssue(issueId: string) {
+    const [issue] = await this.db
+      .select()
+      .from(dataIssues)
+      .where(eq(dataIssues.id, issueId))
+      .limit(1);
+    return issue ?? null;
   }
 
   async resolveIssue(issueId: string, resolution: IssueResolution): Promise<void> {

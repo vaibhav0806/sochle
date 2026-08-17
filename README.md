@@ -52,7 +52,7 @@ See [MILESTONES.md](MILESTONES.md) for the implementation sequence and [SOCHLE_P
 
 ## Current status
 
-Milestones 0 and 1 are under active development.
+Milestones 0 and 1 are implemented. The next build phase is Milestone 2: the deterministic decision core.
 
 ## Local development
 

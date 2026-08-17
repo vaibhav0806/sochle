@@ -6,7 +6,7 @@ import { foldSchemas } from "./schemas";
 describe("Fold response contracts", () => {
   it("accepts sanitized live-shape core responses", () => {
     expect(foldSchemas.totalBalance.parse(foldCoreResponses.totalBalance).total).toBe(250000.25);
-    expect(foldSchemas.bankAccounts.parse(foldCoreResponses.bankAccounts).accounts).toHaveLength(2);
+    expect(foldSchemas.bankAccounts.parse(foldCoreResponses.bankAccounts).accounts).toHaveLength(3);
     expect(foldSchemas.creditCards.parse(foldCoreResponses.creditCards).credit_cards).toHaveLength(
       2
     );

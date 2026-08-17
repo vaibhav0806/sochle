@@ -16,6 +16,31 @@ describe("normalizeFoldSnapshot", () => {
       reason: "passively_tracked",
       sourceAccountId: "demo_bank_excluded",
     });
+    expect(
+      state.accounts.find((account) => account.sourceAccountId === "demo_bank_pending")?.status
+    ).toBe("pending");
+    expect(state.reconciliation).toEqual([
+      expect.objectContaining({ headline: "liquid_cash", status: "matched" }),
+      expect.objectContaining({ headline: "card_obligations", status: "matched" }),
+    ]);
+  });
+
+  it("records a specific difference when a headline does not reconcile", () => {
+    const state = normalizeFoldSnapshot(
+      {
+        ...foldCoreResponses,
+        totalBalance: { ...foldCoreResponses.totalBalance, total: 250100.25 },
+      },
+      "2026-08-17T06:30:00.000Z"
+    );
+
+    expect(state.reconciliation).toContainEqual({
+      differenceMinor: 10_000,
+      headline: "liquid_cash",
+      headlineMinor: 25_010_025,
+      projectedMinor: 25_000_025,
+      status: "mismatch",
+    });
   });
 
   it("counts a shared add-on card obligation only on the parent", () => {

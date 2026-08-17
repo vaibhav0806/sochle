@@ -30,6 +30,7 @@ const snapshot: NormalizedFinancialState = {
   investmentContext: { mutualFunds: null, netWorth: null, stocks: null },
   liquidCash: { currency: "INR", minor: 150_000_00 },
   observedMonthlySpending: { currency: "INR", minor: 35_000_00 },
+  reconciliation: [],
   sourceFreshness: [],
   transactions: [
     {
@@ -58,6 +59,17 @@ afterAll(async () => {
 });
 
 describe("FinancialRepository", () => {
+  it("reads and updates a provider connection", async () => {
+    const connection = await repository.ensureConnection("fold");
+
+    await repository.setConnectionStatus(connection.id, "authorizing");
+
+    await expect(repository.getConnection("fold")).resolves.toMatchObject({
+      id: connection.id,
+      status: "authorizing",
+    });
+  });
+
   it("upserts accounts and transactions idempotently by provider source ID", async () => {
     const connection = await repository.ensureConnection("fold");
 

@@ -225,6 +225,36 @@ export function normalizeFoldSnapshot(
   const cardsRefreshedAt = latestTimestamp(
     (creditCards.credit_cards ?? []).map((card) => card.last_synced_at)
   );
+  const liquidCash = toMoney(totalBalance.total);
+  const projectedLiquidCashMinor = normalizedBankAccounts
+    .filter((account) => account.status === "active")
+    .reduce((total, account) => total + (account.balance?.minor ?? 0), 0);
+  const projectedCardObligationsMinor = normalizedCardAccounts.reduce(
+    (total, account) => total + (account.balance?.minor ?? 0),
+    0
+  );
+  const reconciliation = [
+    {
+      differenceMinor: liquidCash.minor - projectedLiquidCashMinor,
+      headline: "liquid_cash" as const,
+      headlineMinor: liquidCash.minor,
+      projectedMinor: projectedLiquidCashMinor,
+      status:
+        liquidCash.minor === projectedLiquidCashMinor
+          ? ("matched" as const)
+          : ("mismatch" as const),
+    },
+    {
+      differenceMinor: cardObligations.minor - projectedCardObligationsMinor,
+      headline: "card_obligations" as const,
+      headlineMinor: cardObligations.minor,
+      projectedMinor: projectedCardObligationsMinor,
+      status:
+        cardObligations.minor === projectedCardObligationsMinor
+          ? ("matched" as const)
+          : ("mismatch" as const),
+    },
+  ];
 
   return {
     accounts: [...normalizedBankAccounts, ...normalizedCardAccounts],
@@ -236,8 +266,9 @@ export function normalizeFoldSnapshot(
       netWorth: toMoney(netWorth.total),
       stocks: toMoney(stocks.total_current_value),
     },
-    liquidCash: toMoney(totalBalance.total),
+    liquidCash,
     observedMonthlySpending: toMoney(spendingSummary.total_amount),
+    reconciliation,
     sourceFreshness: [
       freshness("total_balance", totalBalance.as_of, syncedAt),
       freshness("bank_accounts", bankRefreshedAt, syncedAt),

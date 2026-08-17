@@ -40,6 +40,12 @@ importers:
       "@sochle/contracts":
         specifier: workspace:*
         version: link:../../packages/contracts
+      "@sochle/db":
+        specifier: workspace:*
+        version: link:../../packages/db
+      "@sochle/fold":
+        specifier: workspace:*
+        version: link:../../packages/fold
       next:
         specifier: ^16.3.1
         version: 16.3.1(@types/node@24.13.3)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
