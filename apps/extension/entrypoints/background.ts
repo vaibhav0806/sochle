@@ -31,7 +31,7 @@ export default defineBackground(() => {
     apiOrigin,
     credential,
     extensionOrigin,
-    fetch,
+    fetch: globalThis.fetch.bind(globalThis),
     identity: {
       getRedirectURL: (path) => browser.identity.getRedirectURL(path),
       launchWebAuthFlow: (options) => browser.identity.launchWebAuthFlow(options),
