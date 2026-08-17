@@ -31,3 +31,33 @@ export const issueSeverity = pgEnum("issue_severity", ["info", "warning", "block
 export const issueStatus = pgEnum("issue_status", ["open", "resolved", "ignored"]);
 export const correctionAction = pgEnum("correction_action", ["classify", "exclude", "ignore_once"]);
 export const syncStatus = pgEnum("sync_status", ["running", "succeeded", "failed"]);
+export const decisionVerdict = pgEnum("decision_verdict", [
+  "comfortably_affordable",
+  "affordable_with_tradeoffs",
+  "wait_until_payday",
+  "requires_reducing_investments",
+  "technically_possible_financially_tight",
+  "not_affordable",
+  "insufficient_confidence",
+]);
+export const financialVerdict = pgEnum("financial_verdict", [
+  "comfortably_affordable",
+  "affordable_with_tradeoffs",
+  "wait_until_payday",
+  "requires_reducing_investments",
+  "technically_possible_financially_tight",
+  "not_affordable",
+]);
+export const purchaseIntentStatus = pgEnum("purchase_intent_status", [
+  "considering",
+  "planned",
+  "purchased",
+  "skipped",
+]);
+export const auditEventType = pgEnum("audit_event_type", [
+  "decision_created",
+  "decision_recalculated",
+  "intent_status_changed",
+  "export_created",
+  "deletion_initiated",
+]);

@@ -22,6 +22,13 @@
       "when": 1786953585204,
       "tag": "0002_open_toad",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1786964730783,
+      "tag": "0003_decision-core",
+      "breakpoints": true
     }
   ]
 }
