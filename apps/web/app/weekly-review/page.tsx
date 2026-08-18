@@ -44,8 +44,8 @@ export default async function WeeklyReviewPage() {
   return (
     <main>
       <p className="eyebrow">Private check-in</p>
-      <h1>Weekly review</h1>
-      <p>What changed in the last seven days, calculated from your local Sochle history.</p>
+      <h1>Your week</h1>
+      <p>A quiet look at the choices you made over the last seven days.</p>
       <section className="metric-grid">
         <article className="card metric">
           <span>Decisions</span>

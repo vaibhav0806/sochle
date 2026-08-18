@@ -2,9 +2,9 @@ import { expect, test } from "@playwright/test";
 
 test("synthetic demo exposes the data surfaces without credentials", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByRole("heading", { name: "सोचle." })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Let's get Sochle ready." })).toBeVisible();
 
-  await page.getByRole("link", { name: "Set up financial data" }).click();
+  await page.getByRole("link", { name: "Set up Sochle" }).click();
   await expect(page).toHaveURL(/\/connections$/);
   await expect(page.getByText("Demo mode is on")).toBeVisible();
   await expect(page.getByRole("button", { name: "Connect Fold" })).toHaveCount(0);
@@ -20,6 +20,6 @@ test("mobile users retain navigation to the purchase check", async ({ page }) =>
 
   await expect(page.getByRole("navigation")).toBeVisible();
   await page.getByRole("link", { name: "Check", exact: true }).click();
-  await expect(page.getByRole("heading", { name: "Check it" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Does this fit?" })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(390);
 });

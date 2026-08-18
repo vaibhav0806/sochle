@@ -274,6 +274,100 @@ h2 {
 .purchase-result dl {
   margin-top: 1rem;
 }
+.home-stack {
+  display: grid;
+  gap: 4.5rem;
+}
+.daily-position {
+  display: grid;
+  gap: 1rem;
+  max-width: 46rem;
+}
+.daily-position p {
+  margin: 0;
+}
+.daily-position h1 {
+  max-width: 44rem;
+}
+.home-setup {
+  justify-self: start;
+  margin-top: -2.5rem;
+}
+.home-section {
+  display: grid;
+  gap: 1rem;
+}
+.home-section > p {
+  margin: 0;
+}
+.today-picture {
+  border-bottom: 1px solid var(--border);
+  border-top: 1px solid var(--border);
+  padding: 1.1rem 0;
+}
+.today-picture summary {
+  color: var(--ink);
+  cursor: pointer;
+  font-size: 1.2rem;
+  font-weight: 750;
+}
+.today-picture dl {
+  gap: 0;
+  margin-top: 1rem;
+}
+.today-picture dl div {
+  align-items: baseline;
+  border-top: 1px solid var(--border);
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  padding: 0.85rem 0;
+}
+.today-picture dd {
+  font-weight: 750;
+}
+.decision-list {
+  border-top: 1px solid var(--border);
+  display: grid;
+}
+.decision-row {
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  color: var(--ink);
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  padding: 1rem 0;
+}
+.decision-row > span:first-child,
+.decision-row-meta {
+  display: grid;
+  gap: 0.25rem;
+}
+.decision-row small {
+  color: var(--muted-ink);
+  font-size: 0.85rem;
+}
+.decision-row-meta {
+  flex: 0 0 auto;
+  text-align: right;
+}
+.worth-knowing {
+  align-items: center;
+  background: color-mix(in srgb, var(--caution) 10%, var(--surface));
+  border-radius: var(--surface-radius);
+  display: flex;
+  gap: 1.5rem;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+}
+.worth-knowing h2,
+.worth-knowing p {
+  margin: 0;
+}
+.worth-knowing p {
+  font-size: 1rem;
+}
 .stack {
   display: grid;
   gap: 1rem;

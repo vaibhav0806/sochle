@@ -38,6 +38,7 @@ async function createReferenceDecision(page: Page) {
   await page.getByLabel("Price in rupees").fill("45000");
   await page.getByRole("button", { name: "Does this fit?" }).click();
   await page.getByRole("link", { name: "Full decision" }).click();
+  await expect(page).toHaveURL(/\/decisions\/[0-9a-f-]+$/);
 }
 
 test("decision pages and mutations require the owner session", async ({ page }) => {
@@ -104,6 +105,22 @@ test("owner navigation renders every implemented web surface without browser err
   expect(browserErrors).toEqual([]);
 });
 
+test("Home hierarchy keeps the decision clear and the machinery quiet", async ({ page }) => {
+  await loginOwner(page);
+  await page.goto("/");
+
+  await expect(page.locator("main h1, main h2, main summary")).toHaveText([
+    "You're in a comfortable spot today.",
+    "Does this fit?",
+    "Today's picture",
+    "Recent decisions",
+  ]);
+  const home = (await page.locator("main").innerText()).toLowerCase();
+  for (const hiddenTerm of ["safe to spend", "liquid cash", "snapshot", "rules v", "fold"]) {
+    expect(home).not.toContain(hiddenTerm);
+  }
+});
+
 test("owner configures rules and checks a ₹45,000 purchase", async ({ page }) => {
   await loginOwner(page);
   await page.goto("/rules");
@@ -141,10 +158,12 @@ test("owner configures rules and checks a ₹45,000 purchase", async ({ page }) 
 test("Today and history expose the stored decision evidence", async ({ page }) => {
   await createReferenceDecision(page);
   await page.goto("/today");
-  await expect(page.getByText("Safe to spend")).toBeVisible();
+  await expect(page).toHaveURL(/\/$/);
+  await page.getByText("Today's picture").click();
+  await expect(page.getByText("Comfortable to spend")).toBeVisible();
   await expect(page.getByText("₹50,000.00")).toBeVisible();
-  await expect(page.getByText("Liquid cash")).toBeVisible();
-  await expect(page.getByText("Upcoming obligations")).toBeVisible();
+  await expect(page.getByText("Already committed")).toBeVisible();
+  await expect(page.getByText("Safety buffer protected")).toBeVisible();
 
   await page.goto("/decisions");
   await page.getByRole("link", { name: "Synthetic headphones" }).click();
@@ -171,7 +190,7 @@ test("Today and history expose the stored decision evidence", async ({ page }) =
   await expect(page.getByRole("heading", { name: "No decisions yet" })).toBeVisible();
 
   await page.goto("/weekly-review");
-  await expect(page.getByRole("heading", { name: "Weekly review" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Your week" })).toBeVisible();
   await expect(
     page
       .locator("article")
@@ -187,7 +206,9 @@ test("resolving a blocking issue appends a successor and preserves the original 
   await seedDecisionIssue();
   await createReferenceDecision(page);
   const originalDecisionUrl = page.url();
-  await expect(page.getByText("Pehle data sort karte hain, phir decision.")).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Pehle data sort karte hain, phir decision." })
+  ).toBeVisible();
 
   await page.goto("/money-inbox");
   await page.getByLabel("Classification").selectOption("investment");
@@ -200,7 +221,9 @@ test("resolving a blocking issue appends a successor and preserves the original 
   await expect(page.getByText("Haan, this fits.")).toBeVisible();
 
   await page.goto(originalDecisionUrl);
-  await expect(page.getByText("Pehle data sort karte hain, phir decision.")).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Pehle data sort karte hain, phir decision." })
+  ).toBeVisible();
 });
 
 test("optional transaction cleanup is labelled and does not block a purchase", async ({ page }) => {
@@ -244,10 +267,12 @@ test("owner exports then deletes every local record", async ({ page }) => {
   });
   expect(rejected.status()).toBe(400);
 
-  await page.goto("/today");
-  await page.getByLabel("Type DELETE to confirm").fill("DELETE");
-  await page.getByRole("button", { name: "Delete all my data" }).click();
-  await expect(page).toHaveURL(/\/login\?deleted=1$/);
+  const deleteResponse = await page.request.post("/api/delete", {
+    form: { confirmation: "DELETE" },
+    maxRedirects: 0,
+  });
+  expect(deleteResponse.status()).toBe(303);
+  expect(deleteResponse.headers().location).toMatch(/\/login\?deleted=1$/);
 });
 
 test("export and deletion reject an anonymous request", async ({ page }) => {

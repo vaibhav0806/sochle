@@ -3,10 +3,7 @@
 import Link from "next/link";
 import { useActionState, useState } from "react";
 
-import {
-  checkPurchaseAction,
-  type PurchaseCheckState,
-} from "../_actions/check-purchase";
+import { checkPurchaseAction, type PurchaseCheckState } from "../_actions/check-purchase";
 import { StatefulAction } from "./stateful-action";
 
 type PurchaseCheckAction = (
