@@ -5,13 +5,19 @@ export type DecisionListItem = {
   description: string;
   id: string;
   presentation: DecisionPresentation;
+  priceLabel: string;
   statusLabel: string;
   updatedLabel: string;
 };
 
 export function DecisionList({ items }: { items: DecisionListItem[] }) {
   if (items.length === 0) {
-    return <p className="muted">Your recent answers will appear here after your first check.</p>;
+    return (
+      <div className="decision-empty">
+        <p className="muted">Your answers will appear here after your first check.</p>
+        <Link href="/check">Check a purchase →</Link>
+      </div>
+    );
   }
 
   return (
@@ -20,7 +26,9 @@ export function DecisionList({ items }: { items: DecisionListItem[] }) {
         <Link className="decision-row" href={`/decisions/${item.id}`} key={item.id}>
           <span>
             <strong>{item.description}</strong>
-            <small>{item.presentation.title}</small>
+            <small>
+              {item.priceLabel} · {item.presentation.title}
+            </small>
           </span>
           <span className="decision-row-meta">
             <span>{item.statusLabel}</span>

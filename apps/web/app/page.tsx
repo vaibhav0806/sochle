@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { formatMinorAsRupees } from "../lib/money";
 import { presentDecision } from "../lib/presentation/decision";
 import { purchaseStatusLabel, relativeUpdateLabel } from "../lib/presentation/status";
 import { presentToday, type TodayPresentation } from "../lib/presentation/today";
@@ -57,6 +58,7 @@ export default async function HomePage() {
       description: intent.description,
       id: decision.id,
       presentation: presentDecision(decision.auditBundle.result),
+      priceLabel: formatMinorAsRupees(decision.priceMinor),
       statusLabel: purchaseStatusLabel(intent.status),
       updatedLabel: relativeUpdateLabel(decision.evaluatedAt),
     }));

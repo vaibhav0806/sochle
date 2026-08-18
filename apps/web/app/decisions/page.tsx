@@ -1,6 +1,7 @@
-import Link from "next/link";
-
+import { DecisionList, type DecisionListItem } from "../_components/decision-list";
 import { formatMinorAsRupees } from "../../lib/money";
+import { presentDecision } from "../../lib/presentation/decision";
+import { purchaseStatusLabel, relativeUpdateLabel } from "../../lib/presentation/status";
 import { requireOwnerPage } from "../../lib/server/auth";
 import { getDecisionRepository, getRepository } from "../../lib/server/database";
 
@@ -14,6 +15,8 @@ const statuses = [
   "skipped",
   "not_relevant",
 ] as const;
+
+const visibleFilters = ["considering", "waiting", "planned", "purchased", "skipped"] as const;
 
 export default async function DecisionsPage({
   searchParams,
@@ -33,61 +36,44 @@ export default async function DecisionsPage({
   const filteredRows = statuses.includes(selectedStatus as (typeof statuses)[number])
     ? rows.filter((row) => row.intent.status === selectedStatus)
     : rows;
+  const items: DecisionListItem[] = filteredRows.map(({ decision, intent }) => ({
+    description: intent.description,
+    id: decision.id,
+    presentation: presentDecision(decision.auditBundle.result),
+    priceLabel: formatMinorAsRupees(decision.priceMinor),
+    statusLabel: purchaseStatusLabel(intent.status),
+    updatedLabel: relativeUpdateLabel(decision.evaluatedAt),
+  }));
 
   return (
-    <main>
-      <p className="eyebrow">Decision memory</p>
-      <h1>Decisions</h1>
-      <p>Every answer remains tied to the exact snapshot, rules, and formula that produced it.</p>
-      <form action="/decisions" className="actions">
+    <main className="page-stack">
+      <div>
+        <p className="eyebrow">Decision memory</p>
+        <h1>Decisions</h1>
+        <p>Come back to what you considered, what Sochle said, and what you chose.</p>
+      </div>
+      <form action="/decisions" className="decision-filters">
         <label>
           Status
-          <select defaultValue={selectedStatus ?? ""} name="status">
-            <option value="">All decisions</option>
-            {statuses.map((status) => (
+          <select
+            defaultValue={
+              visibleFilters.includes(selectedStatus as (typeof visibleFilters)[number])
+                ? selectedStatus
+                : ""
+            }
+            name="status"
+          >
+            <option value="">All</option>
+            {visibleFilters.map((status) => (
               <option key={status} value={status}>
-                {status.replaceAll("_", " ")}
+                {purchaseStatusLabel(status)}
               </option>
             ))}
           </select>
         </label>
         <button type="submit">Filter</button>
       </form>
-      {filteredRows.length === 0 ? (
-        <section className="card">
-          <h2>No decisions yet</h2>
-          <p className="muted">Run your first purchase check to start the history.</p>
-        </section>
-      ) : (
-        <div className="table-wrap card">
-          <table>
-            <thead>
-              <tr>
-                <th>Purchase</th>
-                <th>Status</th>
-                <th>Verdict</th>
-                <th>Price</th>
-                <th>Confidence</th>
-                <th>Evaluated</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredRows.map(({ decision, intent }) => (
-                <tr key={intent.id}>
-                  <td>
-                    <Link href={`/decisions/${decision.id}`}>{intent.description}</Link>
-                  </td>
-                  <td>{intent.status}</td>
-                  <td>{decision.verdict.replaceAll("_", " ")}</td>
-                  <td>{formatMinorAsRupees(decision.priceMinor)}</td>
-                  <td>{decision.confidence}</td>
-                  <td>{decision.evaluatedAt.toLocaleString("en-IN")}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+      <DecisionList items={items} />
     </main>
   );
 }

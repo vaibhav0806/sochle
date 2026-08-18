@@ -148,11 +148,11 @@ test("owner configures rules and checks a ₹45,000 purchase", async ({ page }) 
   );
   await page.getByRole("link", { name: "Full decision" }).click();
   await expect(page).toHaveURL(/\/decisions\/[0-9a-f-]+$/);
-  await expect(page.getByText("Haan, this fits.")).toBeVisible();
+  await expect(page.getByText("Yes, this fits comfortably.")).toBeVisible();
   const detailUrl = page.url();
   await page.reload();
   expect(page.url()).toBe(detailUrl);
-  await expect(page.getByText("Haan, this fits.")).toBeVisible();
+  await expect(page.getByText("Yes, this fits comfortably.")).toBeVisible();
 });
 
 test("Today and history expose the stored decision evidence", async ({ page }) => {
@@ -167,16 +167,19 @@ test("Today and history expose the stored decision evidence", async ({ page }) =
 
   await page.goto("/decisions");
   await page.getByRole("link", { name: "Synthetic headphones" }).click();
+  await page.getByText("Technical details").click();
   await expect(page.getByText("Technical headroom")).toBeVisible();
   await expect(page.getByText("Comfortable headroom")).toBeVisible();
   await expect(page.getByText("Goal headroom")).toBeVisible();
-  await expect(page.getByText("Formula v1")).toBeVisible();
+  await expect(page.getByText("Formula version")).toBeVisible();
 
   const plannedFor = new Date(Date.now() + 7 * 24 * 60 * 60 * 1_000).toISOString().slice(0, 10);
+  await page.getByText("Plan it or choose another outcome").click();
   await page.getByLabel("Purchase status").selectOption("planned");
   await page.getByLabel("Planned for").fill(plannedFor);
   await page.getByRole("button", { name: "Update status" }).click();
   await page.reload();
+  await page.getByText("Plan it or choose another outcome").click();
   await expect(page.getByLabel("Purchase status")).toHaveValue("planned");
   await expect(page.getByLabel("Planned for")).toHaveValue(plannedFor);
 
@@ -187,7 +190,9 @@ test("Today and history expose the stored decision evidence", async ({ page }) =
   await expect(page.getByRole("link", { name: "Synthetic headphones" })).toBeVisible();
   await page.getByLabel("Status").selectOption("waiting");
   await page.getByRole("button", { name: "Filter" }).click();
-  await expect(page.getByRole("heading", { name: "No decisions yet" })).toBeVisible();
+  await expect(
+    page.getByText("Your answers will appear here after your first check.")
+  ).toBeVisible();
 
   await page.goto("/weekly-review");
   await expect(page.getByRole("heading", { name: "Your week" })).toBeVisible();
@@ -200,15 +205,53 @@ test("Today and history expose the stored decision evidence", async ({ page }) =
   await expect(page.getByText("Dogfooding progress")).toBeVisible();
 });
 
+test("decision memory keeps the answer human and the evidence optional", async ({ page }) => {
+  await createReferenceDecision(page);
+  await page.goto("/decisions");
+
+  await expect(page.getByLabel("Status").locator("option")).toHaveText([
+    "All",
+    "Considering",
+    "Waiting",
+    "Planned",
+    "Bought",
+    "Passed",
+  ]);
+  const row = page.getByRole("link", { name: /Synthetic headphones/ });
+  await expect(row).toContainText("₹45,000.00");
+  await expect(row).toContainText("Yes, this fits comfortably.");
+  await expect(row).toContainText("Considering");
+  await expect(row).toContainText("Just now");
+  expect((await page.locator("main").innerText()).toLowerCase()).not.toMatch(
+    /comfortably_affordable|confidence|formula|rules v|snapshot|[0-9a-f]{8}-[0-9a-f-]{27}/
+  );
+
+  await row.click();
+  const main = page.locator("main");
+  await expect(page.getByRole("heading", { name: "Yes, this fits comfortably." })).toBeVisible();
+  await expect(
+    main.getByText("Your buffer and upcoming commitments stay protected.")
+  ).toBeVisible();
+  await expect(page.getByRole("button", { name: "Buy" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Wait" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Pass" })).toBeVisible();
+  await expect(page.locator("details").filter({ hasText: "See the maths" })).not.toHaveAttribute(
+    "open"
+  );
+  await expect(
+    page.locator("details").filter({ hasText: "Technical details" })
+  ).not.toHaveAttribute("open");
+  const visibleCopy = (await main.innerText()).toLowerCase();
+  expect(visibleCopy).not.toMatch(/confidence|formula v|rules v|snapshot id|exact audit input/);
+});
+
 test("resolving a blocking issue appends a successor and preserves the original decision", async ({
   page,
 }) => {
   await seedDecisionIssue();
   await createReferenceDecision(page);
   const originalDecisionUrl = page.url();
-  await expect(
-    page.getByRole("heading", { name: "Pehle data sort karte hain, phir decision." })
-  ).toBeVisible();
+  await expect(page.getByRole("heading", { name: "We need one detail first." })).toBeVisible();
 
   await page.goto("/money-inbox");
   await page.getByLabel("Classification").selectOption("investment");
@@ -218,12 +261,10 @@ test("resolving a blocking issue appends a successor and preserves the original 
   await page.goto("/decisions");
   await page.getByRole("link", { name: "Synthetic headphones" }).click();
   expect(page.url()).not.toBe(originalDecisionUrl);
-  await expect(page.getByText("Haan, this fits.")).toBeVisible();
+  await expect(page.getByText("Yes, this fits comfortably.")).toBeVisible();
 
   await page.goto(originalDecisionUrl);
-  await expect(
-    page.getByRole("heading", { name: "Pehle data sort karte hain, phir decision." })
-  ).toBeVisible();
+  await expect(page.getByRole("heading", { name: "We need one detail first." })).toBeVisible();
 });
 
 test("optional transaction cleanup is labelled and does not block a purchase", async ({ page }) => {

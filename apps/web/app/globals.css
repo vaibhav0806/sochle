@@ -352,6 +352,128 @@ h2 {
   flex: 0 0 auto;
   text-align: right;
 }
+.decision-empty {
+  display: grid;
+  gap: 0.6rem;
+  justify-items: start;
+  padding: 1rem 0;
+}
+.page-stack,
+.decision-detail {
+  display: grid;
+  gap: 2rem;
+}
+.decision-filters {
+  align-items: end;
+  display: flex;
+  gap: 0.75rem;
+}
+.decision-filters label {
+  min-width: 12rem;
+}
+.decision-answer {
+  border-left: 3px solid var(--positive);
+  display: grid;
+  gap: 0.8rem;
+  padding-left: 1.3rem;
+}
+.decision-answer.tone-tradeoff,
+.decision-answer.tone-wait,
+.decision-answer.tone-tight {
+  border-left-color: var(--caution);
+}
+.decision-answer.tone-no,
+.decision-answer.tone-needs-input {
+  border-left-color: var(--negative);
+}
+.decision-answer h1,
+.decision-answer p {
+  margin: 0;
+}
+.decision-answer h1 {
+  font-size: clamp(2.4rem, 7vw, 4.25rem);
+}
+.decision-purchase {
+  align-items: end;
+  border-bottom: 1px solid var(--border);
+  border-top: 1px solid var(--border);
+  display: flex;
+  gap: 1.5rem;
+  justify-content: space-between;
+  padding: 1.25rem 0;
+}
+.decision-purchase > strong {
+  color: var(--accent);
+  font-size: clamp(1.35rem, 4vw, 2rem);
+  white-space: nowrap;
+}
+.decision-suggestion {
+  color: var(--ink);
+  font-weight: 650;
+  margin: 0;
+}
+.decision-outcome {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--surface-radius);
+  padding: 1.35rem;
+}
+.decision-outcome p,
+.decision-outcome h2 {
+  margin: 0;
+}
+.outcome-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+.outcome-actions button {
+  border-radius: 999px;
+  min-height: 2.75rem;
+  min-width: 5.25rem;
+}
+.outcome-editor {
+  border-top: 1px solid var(--border);
+  padding-top: 0.85rem;
+}
+.outcome-editor summary,
+.decision-disclosure > summary {
+  color: var(--action);
+  cursor: pointer;
+  font-weight: 700;
+}
+.outcome-editor form {
+  margin-top: 1rem;
+}
+.decision-disclosure {
+  border-bottom: 1px solid var(--border);
+  border-top: 1px solid var(--border);
+  padding: 1rem 0;
+}
+.decision-disclosure + .decision-disclosure {
+  border-top: 0;
+  margin-top: -2rem;
+}
+.decision-disclosure > dl {
+  margin-top: 1rem;
+}
+.decision-disclosure > dl > div,
+.technical-stack dl > div {
+  align-items: baseline;
+  border-top: 1px solid var(--border);
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  padding: 0.75rem 0;
+}
+.technical-stack {
+  display: grid;
+  gap: 2rem;
+  margin-top: 1.5rem;
+}
+.technical-stack section {
+  min-width: 0;
+}
 .worth-knowing {
   align-items: center;
   background: color-mix(in srgb, var(--caution) 10%, var(--surface));
