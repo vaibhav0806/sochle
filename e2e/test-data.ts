@@ -3,6 +3,7 @@ import {
   connections,
   createSochleDatabase,
   DecisionRepository,
+  ExtensionRepository,
   FinancialRepository,
 } from "@sochle/db";
 
@@ -244,6 +245,26 @@ export async function seedStaleSourceIssue(): Promise<void> {
         type: "stale_source",
       },
     ]);
+  } finally {
+    await database.close();
+  }
+}
+
+export async function seedBrowserPairing(): Promise<void> {
+  const database = createSochleDatabase(e2eDatabaseUrl);
+  try {
+    const connection = await new FinancialRepository(database.db).getConnection("fold");
+    if (connection === null) throw new Error("E2E financial connection is missing");
+    const repository = new ExtensionRepository(database.db);
+    const now = new Date();
+    const request = await repository.createPairingRequest({
+      callbackUrl: "https://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.chromiumapp.org/pair",
+      createdAt: now,
+      credentialHash: "a".repeat(64),
+      expiresAt: new Date(now.getTime() + 60_000),
+      extensionOrigin: "chrome-extension://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    });
+    await repository.approvePairingRequest(request.id, connection.id, now);
   } finally {
     await database.close();
   }

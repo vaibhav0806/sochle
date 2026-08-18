@@ -33,22 +33,17 @@ export default async function RulesPage({
   return (
     <main>
       <p className="eyebrow">Your guardrails</p>
-      <h1>Rules</h1>
-      <p>
-        Set the buffer and goals Sochle must protect. Saving creates a new immutable rule version.
-      </p>
-      {saved === "1" && <p className="notice">Rules saved as a new version.</p>}
+      <h1>My guardrails</h1>
+      <p>Choose the cushion, essentials, and goals every purchase answer should protect.</p>
+      {saved === "1" && <p className="notice">Your guardrails are saved.</p>}
       {connection === null ? (
         <section className="card">
-          <h2>Connect Fold first</h2>
-          <p className="muted">Rules belong to your Fold financial snapshot.</p>
+          <h2>Connect your account first</h2>
+          <p className="muted">Then you can choose what every purchase should protect.</p>
         </section>
       ) : (
         <form action="/api/rules" method="post" className="card stack">
-          <div className="row">
-            <h2>Decision rules</h2>
-            <span className="status">Version {active?.version ?? "not saved"}</span>
-          </div>
+          <h2>What every decision protects</h2>
           <div className="form-grid">
             <label>
               Minimum buffer
@@ -156,7 +151,7 @@ export default async function RulesPage({
             </label>
           </div>
           <div className="actions">
-            <button type="submit">Save rules</button>
+            <button type="submit">Save guardrails</button>
           </div>
         </form>
       )}

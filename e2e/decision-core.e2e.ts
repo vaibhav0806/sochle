@@ -3,6 +3,7 @@ import { expect, test } from "@playwright/test";
 
 import {
   resetLiveDatabase,
+  seedBrowserPairing,
   seedDecisionDatabase,
   seedDecisionIssue,
   seedOptionalDecisionIssue,
@@ -32,7 +33,7 @@ async function createReferenceDecision(page: Page) {
   await page.getByLabel("Materiality ratio").fill("10");
   await page.getByLabel("Forecast horizon").selectOption("rolling_days");
   await page.getByLabel("Forecast days").fill("30");
-  await page.getByRole("button", { name: "Save rules" }).click();
+  await page.getByRole("button", { name: "Save guardrails" }).click();
   await page.goto("/check");
   await page.getByLabel("What are you considering?").fill("Synthetic headphones");
   await page.getByLabel("Price in rupees").fill("45000");
@@ -135,7 +136,7 @@ test("owner configures rules and checks a ₹45,000 purchase", async ({ page }) 
   await page.getByLabel("Materiality ratio").fill("10");
   await page.getByLabel("Forecast horizon").selectOption("rolling_days");
   await page.getByLabel("Forecast days").fill("30");
-  await page.getByRole("button", { name: "Save rules" }).click();
+  await page.getByRole("button", { name: "Save guardrails" }).click();
 
   await page.goto("/check");
   await page.getByLabel("What are you considering?").fill("Synthetic headphones");
@@ -245,6 +246,76 @@ test("decision memory keeps the answer human and the evidence optional", async (
   expect(visibleCopy).not.toMatch(/confidence|formula v|rules v|snapshot id|exact audit input/);
 });
 
+test("Settings keeps account operations clear and diagnostics optional", async ({ page }) => {
+  await loginOwner(page);
+  await page.goto("/connections");
+
+  await expect(page.getByRole("heading", { name: "Connected account and browser" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Ready" })).toBeVisible();
+  await expect(page.getByText("Reconciliation")).toHaveCount(0);
+  await expect(page.getByText("Source freshness")).toHaveCount(0);
+  await expect(
+    page.locator("details").filter({ hasText: "Browser connection" })
+  ).not.toHaveAttribute("open");
+
+  await page.goto("/rules");
+  await expect(page.getByRole("heading", { name: "My guardrails" })).toBeVisible();
+  expect((await page.locator("main").innerText()).toLowerCase()).not.toMatch(/version|fold/);
+  await expect(page.getByRole("button", { name: "Save guardrails" })).toBeVisible();
+
+  await page.goto("/settings/privacy");
+  await expect(page.getByRole("heading", { name: "Privacy and data" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Download my data" })).toHaveAttribute(
+    "href",
+    "/api/export"
+  );
+  await expect(page.getByLabel("Type DELETE to confirm")).toBeVisible();
+});
+
+test("Settings keeps an approved browser private until requested", async ({ page }) => {
+  await seedBrowserPairing();
+  await loginOwner(page);
+  await page.goto("/connections");
+
+  await expect(page.getByRole("heading", { name: "Browser ready" })).toBeVisible();
+  const details = page.locator("details").filter({ hasText: "Browser connection" });
+  await expect(details).not.toHaveAttribute("open");
+  expect((await page.locator("main").innerText()).toLowerCase()).not.toContain(
+    "chrome-extension://"
+  );
+  await details.getByText("Browser connection").click();
+  await expect(page.getByText("chrome-extension://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Remove browser" })).toBeVisible();
+});
+
+test("Needs attention shows only blockers and keeps optional cleanup technical", async ({
+  page,
+}) => {
+  await loginOwner(page);
+  await page.goto("/money-inbox");
+  await expect(page.getByRole("heading", { name: "Needs attention" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "All clear" })).toBeVisible();
+
+  await seedDecisionIssue();
+  await page.goto("/money-inbox");
+  await expect(
+    page.getByRole("heading", { name: "Tell Sochle what this purchase was" })
+  ).toBeVisible();
+  expect((await page.locator("main").innerText()).toLowerCase()).not.toMatch(
+    /synthetic_variance|e2e_decision_issue_transaction|recorded evidence/
+  );
+
+  await seedOptionalDecisionIssue();
+  await page.goto("/money-inbox");
+  await expect(page.getByRole("heading", { name: "All clear" })).toBeVisible();
+  await expect(page.getByText("Optional cleanup")).toHaveCount(0);
+  await page.goto("/settings/technical");
+  await expect(page.getByRole("heading", { name: "Optional cleanup" })).toBeVisible();
+  await expect(
+    page.locator("details").filter({ hasText: "Recorded evidence" })
+  ).not.toHaveAttribute("open");
+});
+
 test("resolving a blocking issue appends a successor and preserves the original decision", async ({
   page,
 }) => {
@@ -255,7 +326,7 @@ test("resolving a blocking issue appends a successor and preserves the original 
 
   await page.goto("/money-inbox");
   await page.getByLabel("Classification").selectOption("investment");
-  await page.getByRole("button", { name: "Classify" }).click();
+  await page.getByRole("button", { name: "Save classification" }).click();
   await expect(page.getByRole("heading", { name: "All clear" })).toBeVisible();
 
   await page.goto("/decisions");
@@ -270,7 +341,7 @@ test("resolving a blocking issue appends a successor and preserves the original 
 test("optional transaction cleanup is labelled and does not block a purchase", async ({ page }) => {
   await seedOptionalDecisionIssue();
   await loginOwner(page);
-  await page.goto("/money-inbox");
+  await page.goto("/settings/technical");
   await expect(page.getByRole("heading", { name: "Optional cleanup" })).toBeVisible();
   await expect(page.getByText("These items do not block purchase decisions.")).toBeVisible();
 
@@ -289,11 +360,11 @@ test("a stale Fold source shows refresh guidance instead of transaction controls
   await page.goto("/money-inbox");
 
   await expect(page.getByRole("heading", { name: "Needs attention" })).toBeVisible();
-  await expect(
-    page.getByText("Refresh this source in Fold, then sync Sochle again.")
-  ).toBeVisible();
-  await expect(page.getByRole("link", { name: "Open data connections" })).toBeVisible();
+  await expect(page.getByText("Your account picture needs an update")).toBeVisible();
+  await expect(page.getByRole("link", { name: "Refresh connected account" })).toBeVisible();
   await expect(page.getByLabel("Classification")).toHaveCount(0);
+  await page.goto("/connections");
+  await expect(page.getByRole("heading", { name: "Update needed" })).toBeVisible();
 });
 
 test("owner exports then deletes every local record", async ({ page }) => {

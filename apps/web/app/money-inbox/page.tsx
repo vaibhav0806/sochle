@@ -1,102 +1,84 @@
+import Link from "next/link";
+
+import { formatMinorAsRupees } from "../../lib/money";
 import { requireOwnerPage } from "../../lib/server/auth";
 import { getRepository } from "../../lib/server/database";
 
 export const dynamic = "force-dynamic";
-
-const money = new Intl.NumberFormat("en-IN", { currency: "INR", style: "currency" });
 
 export default async function MoneyInboxPage() {
   await requireOwnerPage();
   const repository = getRepository();
   const connection = repository === null ? null : await repository.getConnection("fold");
   const issues = connection === null ? [] : await repository!.listOpenIssues(connection.id);
-  const isDecisionBlocker = (issue: (typeof issues)[number]) =>
-    issue.severity === "blocking" && issue.type !== "large_untagged_transaction";
-  const blockingIssues = issues.filter(isDecisionBlocker);
-  const optionalIssues = issues.filter((issue) => !isDecisionBlocker(issue));
-  const renderIssues = (items: typeof issues) =>
-    items.map((issue) => (
-      <article className="card stack" key={issue.id}>
-        <div className="row">
-          <div>
-            <h3>{issue.type.replaceAll("_", " ")}</h3>
-            <p className="muted">{issue.relatedEntityId}</p>
-          </div>
-          <strong>{money.format(issue.materialityMinor / 100)}</strong>
-        </div>
-        <details>
-          <summary>Recorded evidence</summary>
-          <pre>{JSON.stringify(issue.details, null, 2)}</pre>
-        </details>
-        {issue.relatedEntityType === "transaction" ? (
-          <>
-            <p className="muted">
-              <a href={`/api/issues/${issue.id}/evidence`} target="_blank">
-                Inspect current Fold evidence ↗
-              </a>
-            </p>
-            <form action={`/api/issues/${issue.id}`} method="post" className="actions">
-              <select name="classification" defaultValue="consumption" aria-label="Classification">
-                <option value="consumption">Consumption</option>
-                <option value="investment">Investment</option>
-                <option value="transfer">Transfer</option>
-                <option value="credit_card_payment">Card payment</option>
-                <option value="refund">Refund</option>
-                <option value="lending">Lending</option>
-                <option value="income">Income</option>
-              </select>
-              <label className="muted">
-                <input name="applyToFuture" type="checkbox" /> Apply to future matching merchants
-              </label>
-              <button name="action" value="classify" type="submit">
-                Classify
-              </button>
-              <button className="secondary" name="action" value="exclude" type="submit">
-                Exclude
-              </button>
-              <button className="quiet" name="action" value="ignore_once" type="submit">
-                Dismiss
-              </button>
-            </form>
-          </>
-        ) : (
-          <div className="stack">
-            <p>Refresh this source in Fold, then sync Sochle again.</p>
-            <p>
-              <a href="/connections">Open data connections</a>
-            </p>
-          </div>
-        )}
-      </article>
-    ));
+  const blockers = issues.filter(
+    (issue) => issue.severity === "blocking" && issue.type !== "large_untagged_transaction"
+  );
 
   return (
-    <main>
-      <p className="eyebrow">Review queue</p>
-      <h1>Money Inbox</h1>
-      <p>Fix decision blockers first. Optional cleanup can wait.</p>
-      {issues.length === 0 ? (
-        <section className="card">
+    <main className="page-stack">
+      <div>
+        <p className="eyebrow">Before your next check</p>
+        <h1>Needs attention</h1>
+        <p>Only things that can materially change a purchase answer appear here.</p>
+      </div>
+
+      {blockers.length === 0 ? (
+        <section className="attention-empty">
           <h2>All clear</h2>
-          <p className="muted">No open data issues.</p>
+          <p>Nothing needs your attention before the next purchase check.</p>
+          <Link href="/check">Check a purchase →</Link>
         </section>
       ) : (
-        <div className="stack">
-          {blockingIssues.length > 0 && (
-            <section className="stack">
-              <h2>Needs attention</h2>
-              <p>These items can change a purchase decision.</p>
-              {renderIssues(blockingIssues)}
-            </section>
+        <section className="attention-list">
+          {blockers.map((issue) =>
+            issue.relatedEntityType === "transaction" ? (
+              <article className="attention-item" key={issue.id}>
+                <div>
+                  <p className="eyebrow">One quick classification</p>
+                  <h2>Tell Sochle what this purchase was</h2>
+                  <p>This could change how another purchase fits.</p>
+                  <strong>{formatMinorAsRupees(issue.materialityMinor)}</strong>
+                </div>
+                <form action={`/api/issues/${issue.id}`} className="stack" method="post">
+                  <label>
+                    Classification
+                    <select
+                      aria-label="Classification"
+                      defaultValue="consumption"
+                      name="classification"
+                    >
+                      <option value="consumption">Everyday spending</option>
+                      <option value="investment">Investment</option>
+                      <option value="transfer">Transfer between my accounts</option>
+                      <option value="credit_card_payment">Card payment</option>
+                      <option value="refund">Refund</option>
+                      <option value="lending">Money lent</option>
+                      <option value="income">Income</option>
+                    </select>
+                  </label>
+                  <label className="checkbox-label">
+                    <input name="applyToFuture" type="checkbox" /> Remember for similar merchants
+                  </label>
+                  <button name="action" type="submit" value="classify">
+                    Save classification
+                  </button>
+                </form>
+              </article>
+            ) : (
+              <article className="attention-item" key={issue.id}>
+                <div>
+                  <p className="eyebrow">A newer picture will help</p>
+                  <h2>Your account picture needs an update</h2>
+                  <p>Sochle needs a newer account picture before giving a reliable answer.</p>
+                </div>
+                <Link className="button-link" href="/connections">
+                  Refresh connected account
+                </Link>
+              </article>
+            )
           )}
-          {optionalIssues.length > 0 && (
-            <section className="stack">
-              <h2>Optional cleanup</h2>
-              <p>These items do not block purchase decisions.</p>
-              {renderIssues(optionalIssues)}
-            </section>
-          )}
-        </div>
+        </section>
       )}
     </main>
   );

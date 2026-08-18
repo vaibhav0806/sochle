@@ -474,6 +474,131 @@ h2 {
 .technical-stack section {
   min-width: 0;
 }
+.attention-empty,
+.attention-item,
+.connection-card,
+.privacy-section,
+.technical-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--surface-radius);
+  padding: 1.5rem;
+}
+.attention-empty,
+.attention-item,
+.connection-card,
+.privacy-section,
+.technical-panel,
+.attention-list {
+  display: grid;
+  gap: 1rem;
+}
+.attention-empty h2,
+.attention-empty p,
+.attention-item h2,
+.attention-item p,
+.connection-card h2,
+.connection-card p,
+.privacy-section h2,
+.privacy-section p,
+.technical-panel h2,
+.technical-panel p {
+  margin: 0;
+}
+.attention-empty,
+.attention-item {
+  justify-items: start;
+}
+.attention-item {
+  align-items: start;
+  grid-template-columns: minmax(0, 1.2fr) minmax(16rem, 0.8fr);
+}
+.attention-item > div {
+  display: grid;
+  gap: 0.55rem;
+}
+.attention-item > div > strong {
+  color: var(--accent);
+  font-size: 1.4rem;
+}
+.connection-heading,
+.privacy-section {
+  align-items: start;
+  display: flex;
+  gap: 1.5rem;
+  justify-content: space-between;
+}
+.connection-indicator {
+  background: color-mix(in srgb, var(--muted-ink) 10%, var(--surface));
+  border-radius: 999px;
+  color: var(--muted-ink);
+  flex: 0 0 auto;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 0.4rem 0.7rem;
+}
+.connection-indicator.ready {
+  background: color-mix(in srgb, var(--positive) 12%, var(--surface));
+  color: var(--positive);
+}
+.connection-indicator.needs-update {
+  background: color-mix(in srgb, var(--caution) 12%, var(--surface));
+  color: var(--caution);
+}
+.connection-disclosure {
+  border-top: 1px solid var(--border);
+  margin-top: 0.25rem;
+  padding-top: 0.9rem;
+}
+.connection-disclosure summary,
+.technical-issue summary {
+  color: var(--action);
+  cursor: pointer;
+  font-weight: 700;
+}
+.connection-disclosure ul {
+  display: grid;
+  gap: 0.7rem;
+  list-style: none;
+  margin: 1rem 0 0;
+  padding: 0;
+}
+.connection-disclosure li {
+  align-items: center;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+}
+.connection-disclosure li > div {
+  display: grid;
+  gap: 0.25rem;
+  min-width: 0;
+}
+.connection-disclosure li span {
+  color: var(--muted-ink);
+  overflow-wrap: anywhere;
+}
+.privacy-section > div {
+  display: grid;
+  gap: 0.5rem;
+}
+.privacy-section > form,
+.privacy-section > .button-link {
+  flex: 0 0 min(18rem, 100%);
+}
+.danger-zone {
+  border-color: color-mix(in srgb, var(--negative) 35%, var(--border));
+}
+.technical-issue {
+  border-top: 1px solid var(--border);
+  display: grid;
+  gap: 0.8rem;
+  padding-top: 1rem;
+}
+.technical-issue h3 {
+  margin: 0;
+  text-transform: capitalize;
+}
 .worth-knowing {
   align-items: center;
   background: color-mix(in srgb, var(--caution) 10%, var(--surface));
@@ -693,6 +818,22 @@ pre {
   }
   .actions {
     align-items: stretch;
+    flex-direction: column;
+  }
+  .attention-item {
+    grid-template-columns: 1fr;
+  }
+  .connection-heading,
+  .privacy-section {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .decision-filters {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .decision-purchase {
+    align-items: start;
     flex-direction: column;
   }
   .form-grid,

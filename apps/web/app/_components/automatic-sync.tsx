@@ -11,5 +11,9 @@ export function AutomaticSync({ enabled }: { enabled: boolean }) {
     void fetch("/api/sync?automatic=1", { method: "POST" }).finally(() => setStatus("done"));
   }, [enabled, status]);
 
-  return status === "syncing" ? <p className="muted">Refreshing in the background…</p> : null;
+  return status === "syncing" ? (
+    <p aria-live="polite" className="notice">
+      Updating your account picture…
+    </p>
+  ) : null;
 }

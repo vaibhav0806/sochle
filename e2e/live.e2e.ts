@@ -29,16 +29,16 @@ test("financial pages require the owner session", async ({ context, page }) => {
   const cookie = (await context.cookies()).find((item) => item.name === "sochle_owner");
   expect(cookie).toMatchObject({ httpOnly: true, sameSite: "Lax" });
 
-  await expect(page.getByText("Status: disconnected")).toBeVisible();
-  await page.getByRole("button", { name: "Sync now" }).click();
-  await expect(page.getByText("Last action: connect first.")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Ready" })).toBeVisible();
+  await page.getByRole("button", { name: "Refresh with Fold" }).click();
+  await expect(page.getByText("Reconnect your account before refreshing.")).toBeVisible();
 });
 
 test("owner resolves a Money Inbox issue through the browser", async ({ page }) => {
   await page.goto("/login");
   await page.getByLabel("Owner password").fill("synthetic-owner-password");
   await page.getByRole("button", { name: "Continue" }).click();
-  await page.goto("/money-inbox");
+  await page.goto("/settings/technical");
 
   await expect(page.getByText("large untagged transaction")).toBeVisible();
   await expect(page.getByText("₹6,500.00")).toBeVisible();
@@ -49,6 +49,7 @@ test("owner resolves a Money Inbox issue through the browser", async ({ page }) 
     form: { action: "classify", classification: "not-a-classification" },
   });
   expect(invalidResolution.status()).toBe(400);
+  await page.getByText("Recorded evidence").click();
   const evidenceHref = await page
     .getByRole("link", { name: /Inspect current Fold evidence/ })
     .getAttribute("href");
@@ -56,7 +57,7 @@ test("owner resolves a Money Inbox issue through the browser", async ({ page }) 
   expect((await page.request.get(evidenceHref)).status()).toBe(409);
 
   await page.getByLabel("Classification").selectOption("investment");
-  await page.getByRole("button", { name: "Classify" }).click();
+  await page.getByRole("button", { name: "Save classification" }).click();
 
   await expect(page.getByRole("heading", { name: "All clear" })).toBeVisible();
   await page.reload();

@@ -9,8 +9,8 @@ test("synthetic demo exposes the data surfaces without credentials", async ({ pa
   await expect(page.getByText("Demo mode is on")).toBeVisible();
   await expect(page.getByRole("button", { name: "Connect Fold" })).toHaveCount(0);
 
-  await page.getByRole("link", { name: /Open Money Inbox/ }).click();
-  await expect(page.getByRole("heading", { name: "Money Inbox" })).toBeVisible();
+  await page.getByRole("link", { name: /Review anything that needs attention/ }).click();
+  await expect(page.getByRole("heading", { name: "Needs attention" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "All clear" })).toBeVisible();
 });
 
