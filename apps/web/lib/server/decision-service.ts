@@ -112,6 +112,7 @@ export function createDecisionService(
           snapshot.state.liquidCash.minor - position.headrooms.technicalMinor,
         issues,
         liquidCashMinor: snapshot.state.liquidCash.minor,
+        minimumBufferMinor: ruleSet.rules.minimumBuffer.minor,
         ruleSetVersion: ruleSet.version,
         snapshotAsOf: snapshot.state.asOf,
         snapshotId: snapshot.id,
