@@ -6,13 +6,14 @@ import {
   type ProductDecisionRequest,
   type PurchaseOutcome,
 } from "@sochle/contracts";
-import { REQUIRED_DECISION_SOURCES, type DecisionResult } from "@sochle/domain";
+import type { DecisionResult } from "@sochle/domain";
 import type { DecisionRepository, FinancialRepository } from "@sochle/db";
 import { z } from "zod";
 
 import { extensionCorsHeaders, parseExtensionOrigin } from "./extension-auth";
 import { createDecisionService, DecisionPrerequisiteError } from "./decision-service";
 import type { createExtensionPairingService } from "./extension-pairing-service";
+import { presentDecision } from "../presentation/decision";
 
 type SavedExtensionDecision = {
   decision: { id: string };
@@ -43,37 +44,17 @@ export class ExtensionDecisionError extends Error {
   }
 }
 
-function requiredSourceFreshness(result: DecisionResult): ExtensionDecisionCard["freshness"] {
-  const rank = { aging: 1, fresh: 0, missing: 3, stale: 2 } as const;
-  let worst: ExtensionDecisionCard["freshness"] = "fresh";
-  for (const source of REQUIRED_DECISION_SOURCES) {
-    const status =
-      result.inputs.financialState.sourceFreshness.find((candidate) => candidate.source === source)
-        ?.status ?? "missing";
-    if (rank[status] > rank[worst]) worst = status;
-  }
-  return worst;
-}
-
 export function projectExtensionDecision(
   saved: SavedExtensionDecision,
   appOrigin: string
 ): ExtensionDecisionCard {
-  const priceMinor = saved.intent.priceMinor;
   return extensionDecisionCardSchema.parse({
-    bufferHeadroomMinor: saved.result.headrooms.comfortableMinor,
-    confidence: saved.result.confidence.level,
     decisionUrl: new URL(`/decisions/${saved.decision.id}`, appOrigin).toString(),
     evaluatedAt: saved.result.evaluatedAt,
     firstComfortablyAffordableDate: saved.result.firstComfortablyAffordableDate,
-    freshness: requiredSourceFreshness(saved.result),
-    headline: saved.result.explanation.headline,
     intentId: saved.intent.id,
-    priceMinor,
-    primaryAction: saved.result.explanation.action,
-    primaryTradeoff: saved.result.explanation.reason,
-    projectedLiquidityMinor: saved.result.inputs.liquidCashMinor - priceMinor,
-    safeToSpendMinor: Math.max(0, saved.result.headrooms.goalMinor + priceMinor),
+    presentation: presentDecision(saved.result),
+    priceMinor: saved.intent.priceMinor,
     verdict: saved.result.verdict,
   });
 }

@@ -1,7 +1,14 @@
 :host {
   all: initial;
   color: #172019;
-  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  font-family: "Geist Variable", "Noto Sans Devanagari Variable", sans-serif;
+  font-synthesis: none;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
 button,
@@ -18,62 +25,61 @@ button {
   border: 0;
   border-radius: 999px;
   bottom: 1.25rem;
-  box-shadow: 0 0.75rem 2rem rgb(23 32 25 / 24%);
+  box-shadow: 0 0.75rem 2rem rgb(23 32 25 / 22%);
   color: #fff;
-  font-size: 0.95rem;
-  font-weight: 750;
+  font-size: 0.9rem;
+  font-weight: 720;
   padding: 0.72rem 1rem;
   position: fixed;
   right: 1.25rem;
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease;
   z-index: 2147483647;
 }
 
+.sochle-trigger:hover {
+  box-shadow: 0 0.9rem 2.3rem rgb(23 32 25 / 28%);
+  transform: translateY(-2px);
+}
+
 .sochle-card {
-  background: #f8f5ed;
-  border: 1px solid #dcd5c7;
-  border-radius: 1rem;
+  animation: sochle-arrive 200ms ease-out both;
+  background: #f8f4e9;
+  border: 1px solid #d9d1c1;
+  border-radius: 1.15rem;
   bottom: 1.25rem;
-  box-shadow: 0 1rem 3rem rgb(23 32 25 / 24%);
+  box-shadow: 0 1.25rem 3.5rem rgb(23 32 25 / 24%);
   box-sizing: border-box;
   font-size: 0.9rem;
-  max-height: calc(100vh - 2.5rem);
+  max-height: calc(100dvh - 2.5rem);
   overflow: auto;
-  padding: 1rem;
+  overscroll-behavior: contain;
+  padding: 1.1rem;
   position: fixed;
   right: 1.25rem;
   width: min(23rem, calc(100vw - 2.5rem));
   z-index: 2147483647;
 }
 
-.sochle-card header,
-.sochle-card header > div,
-.sochle-stack {
-  display: flex;
-}
-
 .sochle-card header {
   align-items: flex-start;
+  display: flex;
   justify-content: space-between;
-}
-
-.sochle-card header > div,
-.sochle-stack {
-  flex-direction: column;
-  gap: 0.75rem;
 }
 
 .sochle-card p,
 .sochle-card dl {
-  color: #526058;
-  line-height: 1.45;
+  color: #56635a;
+  line-height: 1.5;
   margin: 0;
 }
 
 .sochle-eyebrow {
-  color: #a3472f;
-  font-size: 0.68rem;
-  font-weight: 750;
-  letter-spacing: 0.1em;
+  color: #a44731;
+  font-size: 0.66rem;
+  font-weight: 760;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
@@ -81,67 +87,134 @@ button {
 .sochle-link {
   background: transparent;
   border: 0;
-  color: #526058;
-  font-size: 0.72rem;
+  color: #56635a;
+  font-size: 0.74rem;
   padding: 0;
   text-decoration: underline;
 }
 
 .sochle-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
   margin-top: 1rem;
 }
 
-.sochle-stack label {
-  color: #526058;
+.sochle-product {
+  align-items: center;
+  display: grid;
+  gap: 0.85rem;
+  grid-template-columns: auto 1fr;
+}
+
+.sochle-product > img {
+  background: #fff;
+  border: 1px solid #e1d9ca;
+  border-radius: 0.75rem;
+  height: 4.25rem;
+  object-fit: contain;
+  width: 4.25rem;
+}
+
+.sochle-product > div {
   display: flex;
   flex-direction: column;
-  font-size: 0.75rem;
-  font-weight: 650;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+.sochle-product strong {
+  display: -webkit-box;
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.3;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.sochle-product span {
+  color: #a44731;
+  font-size: 1.05rem;
+  font-weight: 720;
+}
+
+.sochle-stack label {
+  color: #56635a;
+  display: flex;
+  flex-direction: column;
+  font-size: 0.72rem;
+  font-weight: 660;
   gap: 0.3rem;
 }
 
 .sochle-stack input {
-  background: #fff;
-  border: 1px solid #cfc7b8;
-  border-radius: 0.55rem;
-  box-sizing: border-box;
+  background: #fffdf8;
+  border: 1px solid #cfc6b5;
+  border-radius: 0.65rem;
   color: #172019;
   padding: 0.62rem 0.7rem;
   width: 100%;
 }
 
-.sochle-stack > button:not(.sochle-close, .sochle-link),
-.sochle-outcomes button {
+.sochle-stack input:focus-visible,
+.sochle-card button:focus-visible,
+.sochle-card summary:focus-visible {
+  outline: 2px solid #a44731;
+  outline-offset: 2px;
+}
+
+.sochle-stack > button:not(.sochle-close, .sochle-link) {
   background: #172019;
   border: 0;
   border-radius: 999px;
   color: #fff;
   font-weight: 700;
-  padding: 0.65rem 0.85rem;
+  padding: 0.72rem 0.9rem;
 }
 
 .sochle-stack button:disabled {
   cursor: not-allowed;
-  opacity: 0.45;
+  opacity: 0.42;
 }
 
-.sochle-badges,
-.sochle-outcomes {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
+.sochle-recency {
+  color: #68736b;
+  font-size: 0.72rem;
+  font-weight: 620;
 }
 
-.sochle-badges span {
-  background: #e5e0d5;
-  border-radius: 999px;
-  color: #39453d;
-  font-size: 0.7rem;
-  padding: 0.28rem 0.5rem;
+.sochle-verdict {
+  font-size: 1.3rem;
+  letter-spacing: -0.035em;
+  line-height: 1.15;
+}
+
+.sochle-action {
+  color: #172019 !important;
+  font-weight: 660;
+}
+
+.sochle-result details {
+  background: #eee8dc;
+  border-radius: 0.7rem;
+  color: #56635a;
+  font-size: 0.76rem;
+  padding: 0.65rem 0.75rem;
+}
+
+.sochle-result summary {
+  cursor: pointer;
+  font-weight: 680;
+}
+
+.sochle-card dl {
+  margin-top: 0.6rem;
 }
 
 .sochle-card dl > div {
   display: flex;
+  gap: 1rem;
   justify-content: space-between;
 }
 
@@ -149,29 +222,82 @@ button {
   color: #172019;
   font-weight: 650;
   margin: 0;
+  text-align: right;
 }
 
 .sochle-outcomes {
   align-items: center;
-  border-top: 1px solid #ddd6c9;
-  padding-top: 0.75rem;
+  border-top: 1px solid #ddd5c6;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  padding-top: 0.8rem;
+}
+
+.sochle-outcomes > span {
+  font-size: 0.75rem;
+  font-weight: 680;
+  margin-right: 0.15rem;
 }
 
 .sochle-outcomes button {
-  background: #e5e0d5;
+  background: #dfdacd;
+  border: 0;
+  border-radius: 999px;
   color: #172019;
   font-size: 0.7rem;
-  padding: 0.38rem 0.55rem;
+  font-weight: 680;
+  padding: 0.4rem 0.58rem;
+}
+
+.sochle-outcomes .sochle-not-relevant {
+  background: transparent;
+  color: #68736b;
+  text-decoration: underline;
 }
 
 .sochle-saved {
-  color: #28714e !important;
+  color: #397657 !important;
+  font-size: 0.76rem;
   font-weight: 700;
 }
 
 [role="alert"] {
-  background: #f7dfd7;
-  border-radius: 0.5rem;
-  color: #842f22 !important;
-  padding: 0.55rem 0.65rem;
+  background: #f3ded5;
+  border: 1px solid #e7c8bc;
+  border-radius: 0.65rem;
+  color: #813a2b !important;
+  padding: 0.62rem 0.7rem;
+}
+
+@keyframes sochle-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(0.6rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 27rem) {
+  .sochle-card {
+    bottom: 0.75rem;
+    max-height: calc(100dvh - 1.5rem);
+    right: 0.75rem;
+    width: calc(100vw - 1.5rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
 }

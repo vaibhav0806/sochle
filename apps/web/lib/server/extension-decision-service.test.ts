@@ -94,61 +94,30 @@ describe("projectExtensionDecision", () => {
     const card = projectExtensionDecision(saved(decisionResult), "http://localhost:3000");
 
     expect(card).toEqual({
-      bufferHeadroomMinor: 50_000_00,
-      confidence: "high",
       decisionUrl: `http://localhost:3000/decisions/${decisionId}`,
       evaluatedAt: "2026-08-17T12:00:00.000Z",
       firstComfortablyAffordableDate: "2026-08-17",
-      freshness: "fresh",
-      headline: decisionResult.explanation.headline,
       intentId,
+      presentation: {
+        consequence: "Your buffer and upcoming commitments stay protected.",
+        mathsRows: expect.any(Array),
+        recencyLabel: "Updated recently",
+        suggestedAction: "You can buy this without moving another plan.",
+        title: "Yes, this fits comfortably.",
+        tone: "comfortable",
+      },
       priceMinor: 45_000_00,
-      primaryAction: decisionResult.explanation.action,
-      primaryTradeoff: decisionResult.explanation.reason,
-      projectedLiquidityMinor: 105_000_00,
-      safeToSpendMinor: 50_000_00,
       verdict: "comfortably_affordable",
     });
     expect(extensionDecisionCardSchema.parse(card)).toEqual(card);
     expect(Object.keys(card).sort()).toEqual([
-      "bufferHeadroomMinor",
-      "confidence",
       "decisionUrl",
       "evaluatedAt",
       "firstComfortablyAffordableDate",
-      "freshness",
-      "headline",
       "intentId",
+      "presentation",
       "priceMinor",
-      "primaryAction",
-      "primaryTradeoff",
-      "projectedLiquidityMinor",
-      "safeToSpendMinor",
       "verdict",
     ]);
-  });
-
-  it.each([
-    ["aging", "aging"],
-    ["stale", "stale"],
-    ["missing", "missing"],
-  ] as const)("uses the worst required-source freshness: %s", (sourceStatus, expected) => {
-    const decisionResult = result();
-    if (sourceStatus === "missing") {
-      decisionResult.inputs.financialState.sourceFreshness.shift();
-    } else {
-      decisionResult.inputs.financialState.sourceFreshness[0]!.status = sourceStatus;
-    }
-    expect(
-      projectExtensionDecision(saved(decisionResult), "https://sochle.example").freshness
-    ).toBe(expected);
-  });
-
-  it("never returns a negative safe-to-spend amount", () => {
-    const decisionResult = result();
-    decisionResult.headrooms.goalMinor = -100_000_00;
-    expect(
-      projectExtensionDecision(saved(decisionResult), "https://sochle.example").safeToSpendMinor
-    ).toBe(0);
   });
 });

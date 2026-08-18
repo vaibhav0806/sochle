@@ -1,3 +1,5 @@
+import "@fontsource-variable/geist";
+import "@fontsource-variable/noto-sans-devanagari";
 import "./style.css";
 
 import { createElement } from "react";

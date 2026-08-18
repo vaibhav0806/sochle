@@ -21,19 +21,19 @@ const extractedProduct = {
 } as const;
 
 const decisionCard = {
-  bufferHeadroomMinor: 2_000_00,
-  confidence: "high",
   decisionUrl: "http://localhost:3000/decisions/00000000-0000-4000-8000-000000000001",
   evaluatedAt: "2026-08-18T08:00:00.000Z",
   firstComfortablyAffordableDate: null,
-  freshness: "fresh",
-  headline: "Haan, this fits.",
   intentId: "00000000-0000-4000-8000-000000000002",
+  presentation: {
+    consequence: "Your buffer and upcoming commitments stay protected.",
+    mathsRows: [{ label: "After this purchase", value: "₹55,000.00" }],
+    recencyLabel: "Updated recently",
+    suggestedAction: "You can buy this without moving another plan.",
+    title: "Yes, this fits comfortably.",
+    tone: "comfortable",
+  },
   priceMinor: 45_000_00,
-  primaryAction: null,
-  primaryTradeoff: "Your buffer and goals stay intact.",
-  projectedLiquidityMinor: 55_000_00,
-  safeToSpendMinor: 47_000_00,
   verdict: "comfortably_affordable",
 } as const;
 

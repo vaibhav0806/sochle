@@ -10,10 +10,6 @@ type AppProps = {
   sendMessage(message: ExtensionBackgroundRequest): Promise<unknown>;
 };
 
-function errorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : "Something went wrong. Please try again.";
-}
-
 function thresholdLabel(minor: number): string {
   return new Intl.NumberFormat("en-IN", {
     currency: "INR",
@@ -25,7 +21,7 @@ function thresholdLabel(minor: number): string {
 export function App({ openUrl, sendMessage }: AppProps) {
   const [session, setSession] = useState<ExtensionSession | null>(null);
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
   const [confirmDisconnect, setConfirmDisconnect] = useState(false);
 
   useEffect(() => {
@@ -34,8 +30,8 @@ export function App({ openUrl, sendMessage }: AppProps) {
       .then((response) => {
         if (active) setSession(extensionSessionSchema.parse(response));
       })
-      .catch((reason: unknown) => {
-        if (active) setError(errorMessage(reason));
+      .catch(() => {
+        if (active) setNotice("Sochle couldn’t check this browser. Try again in a moment.");
       });
     return () => {
       active = false;
@@ -44,41 +40,48 @@ export function App({ openUrl, sendMessage }: AppProps) {
 
   async function pair() {
     setBusy(true);
-    setError(null);
+    setNotice(null);
     try {
       setSession(extensionSessionSchema.parse(await sendMessage({ operation: "pair" })));
-    } catch (reason) {
-      setError(errorMessage(reason));
+    } catch {
+      setNotice("Pairing didn’t finish. Your Sochle app is unchanged—try once more.");
     } finally {
       setBusy(false);
     }
   }
 
   async function checkCurrentProduct() {
-    setError(null);
-    const response = await sendMessage({ operation: "openCurrentProductCheck" });
-    if (
-      typeof response !== "object" ||
-      response === null ||
-      Reflect.get(response, "opened") !== true
-    ) {
-      setError(
-        Reflect.get(response ?? {}, "reason") === "reload_required"
-          ? "Reload this product tab after updating the extension, then try again."
-          : "Open a product on Amazon India, Flipkart, or Myntra, then try again."
-      );
+    setBusy(true);
+    setNotice(null);
+    try {
+      const response = await sendMessage({ operation: "openCurrentProductCheck" });
+      if (
+        typeof response !== "object" ||
+        response === null ||
+        Reflect.get(response, "opened") !== true
+      ) {
+        setNotice(
+          Reflect.get(response ?? {}, "reason") === "reload_required"
+            ? "Reload this product tab once, then check again."
+            : "Open a product on Amazon India, Flipkart, or Myntra, then check again."
+        );
+      }
+    } catch {
+      setNotice("That check didn’t start. Reload the product tab and try again.");
+    } finally {
+      setBusy(false);
     }
   }
 
   async function disconnect() {
     setBusy(true);
-    setError(null);
+    setNotice(null);
     try {
       await sendMessage({ operation: "disconnect" });
       setSession({ appUrl: session?.appUrl ?? "http://localhost:3000", kind: "unpaired" });
       setConfirmDisconnect(false);
-    } catch (reason) {
-      setError(errorMessage(reason));
+    } catch {
+      setNotice("This browser is still paired. Try disconnecting again.");
     } finally {
       setBusy(false);
     }
@@ -86,68 +89,105 @@ export function App({ openUrl, sendMessage }: AppProps) {
 
   return (
     <main>
-      <p className="eyebrow">Decide before you buy</p>
-      <h1>सोचle.</h1>
-      {session === null && error === null && <p>Checking your browser…</p>}
-      {error !== null && <p role="alert">{error}</p>}
+      <header className="brand">
+        <span aria-hidden="true" className="brand-mark">
+          स
+        </span>
+        <div>
+          <p className="eyebrow">Decide before you buy</p>
+          <h1>सोचle.</h1>
+        </div>
+      </header>
+
+      {session === null && notice === null && (
+        <p aria-live="polite" className="loading">
+          Checking this browser…
+        </p>
+      )}
+      {notice !== null && <p role="alert">{notice}</p>}
+
       {session?.kind === "unpaired" && (
         <section>
-          <h2>Your money stays in the app</h2>
-          <p>Sign in once on Sochle, approve this browser, and come straight back.</p>
-          <button disabled={busy} onClick={pair} type="button">
-            {error === null ? "Sign in to Sochle" : "Try pairing again"}
+          <p className="kicker">One quick setup</p>
+          <h2>Pair this browser</h2>
+          <p>Approve it once in Sochle. You’ll come straight back here when it’s ready.</p>
+          <button className="primary full-width" disabled={busy} onClick={pair} type="button">
+            {busy ? "Opening Sochle…" : "Pair this browser"}
           </button>
         </section>
       )}
+
       {session?.kind === "paired" && (
         <section>
-          <div className="status-row">
-            <span className="status-dot" />
+          <div className="ready-row">
+            <span aria-hidden="true" className="status-dot" />
             <div>
-              <h2>Connected to Sochle</h2>
-              <p className="muted">{session.appUrl}</p>
+              <p className="kicker">Sochle is on</p>
+              <h2>{session.ready ? "Ready to check" : "Finish setup first"}</h2>
             </div>
           </div>
           <p>
             {session.ready
-              ? `Auto-prompts start at ${thresholdLabel(session.thresholdMinor)}.`
-              : "Set rules and sync a snapshot in Sochle before checking a purchase."}
+              ? "Open a product and ask the only question that matters: does this fit?"
+              : "Complete your setup in Sochle, then this browser can check purchases."}
           </p>
-          <p className="muted">
-            Works on Amazon India, Flipkart, and Myntra. You can manually check even below your
-            threshold.
-          </p>
+          <p className="merchant-list">Amazon India · Flipkart · Myntra</p>
           <div className="actions">
-            <button onClick={checkCurrentProduct} type="button">
-              Check current product
-            </button>
-            <button className="secondary" onClick={() => openUrl(session.appUrl)} type="button">
-              Open Sochle
-            </button>
-          </div>
-          {confirmDisconnect ? (
-            <div className="confirm-row">
-              <span>Remove this browser?</span>
-              <button disabled={busy} onClick={disconnect} type="button">
-                Yes, disconnect
-              </button>
+            {session.ready && (
               <button
-                className="text-button"
-                onClick={() => setConfirmDisconnect(false)}
+                className="primary"
+                disabled={busy}
+                onClick={checkCurrentProduct}
                 type="button"
               >
-                Cancel
+                {busy ? "Checking…" : "Check current product"}
               </button>
-            </div>
-          ) : (
+            )}
             <button
-              className="text-button"
-              onClick={() => setConfirmDisconnect(true)}
+              className={session.ready ? "secondary" : "primary full-width"}
+              onClick={() => openUrl(session.appUrl)}
               type="button"
             >
-              Disconnect
+              {session.ready ? "Open Sochle" : "Finish setup"}
             </button>
-          )}
+          </div>
+
+          <details className="connection-details">
+            <summary>Browser connection</summary>
+            <dl>
+              <div>
+                <dt>Connected to</dt>
+                <dd>{session.appUrl}</dd>
+              </div>
+              <div>
+                <dt>Automatic checks</dt>
+                <dd>Above {thresholdLabel(session.thresholdMinor)}</dd>
+              </div>
+            </dl>
+            {confirmDisconnect ? (
+              <div className="confirm-row">
+                <span>Remove this browser?</span>
+                <button disabled={busy} onClick={disconnect} type="button">
+                  Disconnect
+                </button>
+                <button
+                  className="text-button"
+                  onClick={() => setConfirmDisconnect(false)}
+                  type="button"
+                >
+                  Keep it paired
+                </button>
+              </div>
+            ) : (
+              <button
+                className="text-button"
+                onClick={() => setConfirmDisconnect(true)}
+                type="button"
+              >
+                Disconnect this browser
+              </button>
+            )}
+          </details>
         </section>
       )}
     </main>

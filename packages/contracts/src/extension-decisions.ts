@@ -1,26 +1,21 @@
 import { z } from "zod";
 
+import { decisionPresentationSchema } from "./presentation";
+
 const signedMinorSchema = z.number().int().safe();
 const nonNegativeMinorSchema = signedMinorSchema.nonnegative();
 
 export const extensionDecisionCardSchema = z
   .object({
-    bufferHeadroomMinor: signedMinorSchema,
-    confidence: z.enum(["high", "medium", "low"]),
     decisionUrl: z.string().url(),
     evaluatedAt: z.string().datetime({ offset: true }),
     firstComfortablyAffordableDate: z
       .string()
       .regex(/^\d{4}-\d{2}-\d{2}$/)
       .nullable(),
-    freshness: z.enum(["fresh", "aging", "stale", "missing"]),
-    headline: z.string().trim().min(1).max(200),
     intentId: z.string().uuid(),
+    presentation: decisionPresentationSchema,
     priceMinor: nonNegativeMinorSchema,
-    primaryAction: z.string().trim().min(1).max(300).nullable(),
-    primaryTradeoff: z.string().trim().min(1).max(500),
-    projectedLiquidityMinor: signedMinorSchema,
-    safeToSpendMinor: nonNegativeMinorSchema,
     verdict: z.enum([
       "comfortably_affordable",
       "affordable_with_tradeoffs",

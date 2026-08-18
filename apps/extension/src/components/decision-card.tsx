@@ -17,26 +17,18 @@ type DecisionCardProps = {
   session: ExtensionSession;
 };
 
-const freshnessLabel: Record<ExtensionDecisionCard["freshness"], string | null> = {
-  aging: "Aging financial data",
-  fresh: null,
-  missing: "Missing financial data",
-  stale: "Stale financial data",
-};
+type Phase = "detected" | "checking" | "error" | "result";
 
 function formatMoney(minor: number): string {
   return new Intl.NumberFormat("en-IN", { currency: "INR", style: "currency" }).format(minor / 100);
 }
 
 function inputPrice(product: ExtractedProduct): string {
-  if (product.price === null) return "";
-  return new Intl.NumberFormat("en-IN", { maximumFractionDigits: 2 }).format(
-    product.price.minor / 100
-  );
-}
-
-function message(error: unknown): string {
-  return error instanceof Error ? error.message : "Sochle could not finish that check.";
+  return product.price === null
+    ? ""
+    : new Intl.NumberFormat("en-IN", { maximumFractionDigits: 2 }).format(
+        product.price.minor / 100
+      );
 }
 
 export function DecisionCard({
@@ -50,10 +42,8 @@ export function DecisionCard({
   const [dismissed, setDismissed] = useState(false);
   const [title, setTitle] = useState(product.title);
   const [price, setPrice] = useState(inputPrice(product));
-  const [loading, setLoading] = useState(false);
+  const [phase, setPhase] = useState<Phase>("detected");
   const [result, setResult] = useState<ExtensionDecisionCard | null>(null);
-  const [expanded, setExpanded] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [savedOutcome, setSavedOutcome] = useState<PurchaseOutcome | null>(null);
   const idempotencyKey = useRef(crypto.randomUUID());
 
@@ -62,51 +52,47 @@ export function DecisionCard({
     setDismissed(false);
     setTitle(product.title);
     setPrice(inputPrice(product));
-    setLoading(false);
+    setPhase("detected");
     setResult(null);
-    setExpanded(false);
-    setError(null);
     setSavedOutcome(null);
     idempotencyKey.current = crypto.randomUUID();
   }, [product.canonicalUrl, product.title, product.price?.minor]);
 
   const correctedPrice = parseInrPrice(`INR ${price}`);
-  const canCalculate =
+  const canCheck =
     session.kind === "paired" &&
     session.ready &&
     title.trim().length > 0 &&
     title.trim().length <= 120 &&
     correctedPrice !== null &&
-    !loading;
+    phase !== "checking";
+  const uncertainTitle = product.confidence !== "high";
+  const uncertainPrice = product.confidence !== "high" || product.price === null;
 
-  async function calculate() {
-    if (!canCalculate || correctedPrice === null) return;
-    setLoading(true);
-    setError(null);
+  async function checkPurchase() {
+    if (!canCheck || correctedPrice === null) return;
+    setPhase("checking");
     try {
-      setResult(
-        await onEvaluate({
-          correctedPrice,
-          correctedTitle: title.trim(),
-          extracted: product,
-          idempotencyKey: idempotencyKey.current,
-        })
-      );
-    } catch (reason) {
-      setError(message(reason));
-    } finally {
-      setLoading(false);
+      const next = await onEvaluate({
+        correctedPrice,
+        correctedTitle: title.trim(),
+        extracted: product,
+        idempotencyKey: idempotencyKey.current,
+      });
+      setResult(next);
+      setPhase("result");
+    } catch {
+      setPhase("error");
     }
   }
 
   async function saveOutcome(outcome: PurchaseOutcome) {
     if (result === null) return;
-    setError(null);
     try {
       const saved = await onOutcome(result.intentId, outcome);
       setSavedOutcome(saved.status);
-    } catch (reason) {
-      setError(message(reason));
+    } catch {
+      setPhase("error");
     }
   }
 
@@ -122,10 +108,7 @@ export function DecisionCard({
   return (
     <aside aria-label="Sochle purchase check" className="sochle-card">
       <header>
-        <div>
-          <span className="sochle-eyebrow">सोचle before checkout</span>
-          <strong>{result?.headline ?? "Ek quick money check?"}</strong>
-        </div>
+        <span className="sochle-eyebrow">सोचle before checkout</span>
         <button className="sochle-close" onClick={() => setDismissed(true)} type="button">
           Dismiss
         </button>
@@ -133,111 +116,107 @@ export function DecisionCard({
 
       {session.kind === "unpaired" || !session.ready ? (
         <div className="sochle-stack">
+          <strong>
+            {session.kind === "unpaired" ? "Pair Sochle to start." : "Finish setup first."}
+          </strong>
           <p>
             {session.kind === "unpaired"
-              ? "Pair Sochle from the extension first."
-              : "Rules or money snapshot missing—app mein setup finish karo."}
+              ? "Approve this browser once, then come straight back."
+              : "Sochle needs your guardrails and latest account picture before it can answer."}
           </p>
           <button onClick={() => onOpenApp(session.appUrl)} type="button">
             Open Sochle
           </button>
         </div>
-      ) : result === null ? (
-        <div className="sochle-stack">
-          <label>
-            Product
-            <input
-              aria-label="Product"
-              maxLength={120}
-              onChange={(event) => setTitle(event.target.value)}
-              value={title}
-            />
-          </label>
-          <label>
-            Price in rupees
-            <input
-              aria-label="Price in rupees"
-              inputMode="decimal"
-              onChange={(event) => setPrice(event.target.value)}
-              placeholder="e.g. 45,000"
-              value={price}
-            />
-          </label>
-          {product.confidence !== "high" && (
-            <p className="sochle-note">Product extraction confidence: {product.confidence}</p>
+      ) : phase === "result" && result !== null ? (
+        <div className="sochle-stack sochle-result" aria-live="polite">
+          <span className="sochle-recency">{result.presentation.recencyLabel}</span>
+          <strong className="sochle-verdict">{result.presentation.title}</strong>
+          <p>{result.presentation.consequence}</p>
+          {result.presentation.suggestedAction !== null && (
+            <p className="sochle-action">{result.presentation.suggestedAction}</p>
           )}
-          {error !== null && <p role="alert">{error}</p>}
-          <button disabled={!canCalculate} onClick={calculate} type="button">
-            {loading ? "Doing the maths…" : error === null ? "Calculate" : "Try again"}
-          </button>
-        </div>
-      ) : (
-        <div className="sochle-stack">
-          <p>{result.primaryTradeoff}</p>
-          <div className="sochle-badges">
-            <span>
-              {result.confidence === "low" ? "Low confidence" : `${result.confidence} confidence`}
-            </span>
-            {freshnessLabel[result.freshness] !== null && (
-              <span>{freshnessLabel[result.freshness]}</span>
-            )}
-          </div>
-          {result.primaryAction !== null && <p className="sochle-action">{result.primaryAction}</p>}
-          {(result.freshness === "stale" || result.freshness === "missing") && (
-            <button
-              className="sochle-link"
-              onClick={() => onOpenApp(new URL("/connections", session.appUrl).toString())}
-              type="button"
-            >
-              Refresh financial data →
-            </button>
-          )}
-          <button className="sochle-secondary" onClick={() => setExpanded(!expanded)} type="button">
-            {expanded ? "Hide the maths" : "Show the maths"}
-          </button>
-          {expanded && (
+          <details>
+            <summary>See the maths</summary>
             <dl>
-              <div>
-                <dt>Price checked</dt>
-                <dd>{formatMoney(result.priceMinor)}</dd>
-              </div>
-              <div>
-                <dt>Safe to spend</dt>
-                <dd>{formatMoney(result.safeToSpendMinor)}</dd>
-              </div>
-              <div>
-                <dt>Projected liquidity</dt>
-                <dd>{formatMoney(result.projectedLiquidityMinor)}</dd>
-              </div>
-              <div>
-                <dt>Buffer headroom</dt>
-                <dd>{formatMoney(result.bufferHeadroomMinor)}</dd>
-              </div>
+              {result.presentation.mathsRows.map((row) => (
+                <div key={row.label}>
+                  <dt>{row.label}</dt>
+                  <dd>{row.value}</dd>
+                </div>
+              ))}
             </dl>
-          )}
+          </details>
           <div className="sochle-outcomes" aria-label="What did you decide?">
             <span>What now?</span>
+            <button onClick={() => saveOutcome("purchased")} type="button">
+              Buy
+            </button>
             <button onClick={() => saveOutcome("waiting")} type="button">
               Wait
             </button>
-            <button onClick={() => saveOutcome("purchased")} type="button">
-              Bought it
-            </button>
             <button onClick={() => saveOutcome("skipped")} type="button">
-              Skip
+              Pass
             </button>
-            <button onClick={() => saveOutcome("not_relevant")} type="button">
+            <button
+              className="sochle-not-relevant"
+              onClick={() => saveOutcome("not_relevant")}
+              type="button"
+            >
               Not relevant
             </button>
           </div>
-          {savedOutcome !== null && <p className="sochle-saved">Saved: {savedOutcome}</p>}
-          {error !== null && <p role="alert">{error}</p>}
+          {savedOutcome !== null && <p className="sochle-saved">Saved</p>}
           <button
             className="sochle-link"
             onClick={() => onOpenApp(result.decisionUrl)}
             type="button"
           >
             Full decision in Sochle →
+          </button>
+        </div>
+      ) : (
+        <div className="sochle-stack">
+          <div className="sochle-product">
+            {product.imageUrl != null && <img alt="" src={product.imageUrl} />}
+            <div>
+              {uncertainTitle ? (
+                <label>
+                  Product
+                  <input
+                    maxLength={120}
+                    onChange={(event) => setTitle(event.target.value)}
+                    value={title}
+                  />
+                </label>
+              ) : (
+                <strong>{title}</strong>
+              )}
+              {uncertainPrice ? (
+                <label>
+                  Price in rupees
+                  <input
+                    inputMode="decimal"
+                    onChange={(event) => setPrice(event.target.value)}
+                    placeholder="45,000"
+                    value={price}
+                  />
+                </label>
+              ) : (
+                <span>{formatMoney(product.price!.minor)}</span>
+              )}
+            </div>
+          </div>
+          {phase === "checking" && <p aria-live="polite">Thoda soch rahe hain…</p>}
+          {phase === "error" && (
+            <p role="alert">That check didn’t go through. Your changes are still here.</p>
+          )}
+          <button disabled={!canCheck} onClick={checkPurchase} type="button">
+            {phase === "checking"
+              ? "Checking…"
+              : phase === "error"
+                ? "Try again"
+                : "Check this purchase"}
           </button>
         </div>
       )}

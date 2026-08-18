@@ -65,7 +65,7 @@ test("a paired extension evaluates a product and records an outcome", async () =
     await popup.reload();
 
     await expect(popup.getByRole("heading", { name: "सोचle." })).toBeVisible();
-    await expect(popup.getByRole("heading", { name: "Connected to Sochle" })).toBeVisible();
+    await expect(popup.getByRole("heading", { name: "Ready to check" })).toBeVisible();
 
     const fixture = await readFile("apps/extension/test/fixtures/amazon-in/primary.html", "utf8");
     const product = await context.newPage();
@@ -79,12 +79,18 @@ test("a paired extension evaluates a product and records an outcome", async () =
 
     await expect(product.getByRole("button", { name: "सोचle" })).toBeVisible();
     await product.getByRole("button", { name: "सोचle" }).click();
-    await product.getByRole("button", { name: "Calculate" }).click();
-    await expect(product.getByText("Likely fits—but ek quick check.")).toBeVisible();
-    await expect(product.getByText("Aging financial data")).toBeVisible();
-    await expect(product.getByRole("button", { name: "Refresh financial data →" })).toHaveCount(0);
-    await product.getByRole("button", { name: "Wait" }).click();
-    await expect(product.getByText("Saved: waiting")).toBeVisible();
+    const card = product.getByLabel("Sochle purchase check");
+    await expect(card.getByText("Noise Cancelling Headphones")).toBeVisible();
+    await expect(card.getByText("₹45,000.00")).toBeVisible();
+    await card.getByRole("button", { name: "Check this purchase" }).click();
+    await expect(card.getByText("Yes, this fits comfortably.")).toBeVisible();
+    await expect(card.getByText("Based on your latest available picture")).toBeVisible();
+    await expect(card.getByText("See the maths").locator("..")).not.toHaveAttribute("open", "");
+    await expect(card).not.toContainText(
+      /confidence|freshness|projected liquidity|headroom|fold|uncaught error/i
+    );
+    await card.getByRole("button", { name: "Wait" }).click();
+    await expect(card.getByText("Saved")).toBeVisible();
   } finally {
     await context.close();
     await rm(profilePath, { force: true, recursive: true });
@@ -121,7 +127,7 @@ test("the extension extracts every merchant and opens a below-threshold check ma
       { credential: rawCredential, key: credentialKey }
     );
     await popup.reload();
-    await expect(popup.getByRole("heading", { name: "Connected to Sochle" })).toBeVisible();
+    await expect(popup.getByRole("heading", { name: "Ready to check" })).toBeVisible();
 
     const merchants = [
       {
@@ -158,12 +164,32 @@ test("the extension extracts every merchant and opens a below-threshold check ma
       );
       await product.goto(merchant.url);
       await product.getByRole("button", { name: "सोचle" }).click();
-      await expect(product.getByLabel("Product")).toHaveValue(merchant.title);
-      await expect(product.getByLabel("Price in rupees")).toHaveValue(merchant.price);
-      await product.getByRole("button", { name: "Calculate" }).click();
-      await expect(product.getByLabel("What did you decide?")).toBeVisible();
+      const card = product.getByLabel("Sochle purchase check");
+      await expect(card.getByText(merchant.title)).toBeVisible();
+      await expect(card.getByText(`₹${merchant.price}.00`)).toBeVisible();
+      await card.getByRole("button", { name: "Check this purchase" }).click();
+      await expect(card.getByLabel("What did you decide?")).toBeVisible();
       await product.close();
     }
+
+    const uncertainUrl = "https://www.amazon.in/dp/AMZ003";
+    const uncertainFixture = await readFile(
+      "apps/extension/test/fixtures/amazon-in/conflict.html",
+      "utf8"
+    );
+    const uncertainProduct = await context.newPage();
+    await uncertainProduct.route(uncertainUrl, (route) =>
+      route.fulfill({
+        body: uncertainFixture,
+        headers: { "content-type": "text/html; charset=utf-8" },
+      })
+    );
+    await uncertainProduct.goto(uncertainUrl);
+    await uncertainProduct.getByRole("button", { name: "सोचle" }).click();
+    const uncertainCard = uncertainProduct.getByLabel("Sochle purchase check");
+    await expect(uncertainCard.getByLabel("Product")).toHaveValue("Portable Projector");
+    await expect(uncertainCard.getByLabel("Price in rupees")).toHaveValue("29,999");
+    await uncertainProduct.close();
 
     const belowThresholdUrl = "https://www.myntra.com/jackets/MYN002";
     const belowThresholdFixture = await readFile(
@@ -184,10 +210,9 @@ test("the extension extracts every merchant and opens a below-threshold check ma
       .getByRole("button", { name: "Check current product" })
       .evaluate((button: HTMLButtonElement) => button.click());
     await belowThresholdProduct.getByRole("button", { name: "सोचle" }).click();
-    await expect(belowThresholdProduct.getByLabel("Product")).toHaveValue(
-      "North Trail Insulated Jacket"
-    );
-    await expect(belowThresholdProduct.getByLabel("Price in rupees")).toHaveValue("8,999");
+    const belowThresholdCard = belowThresholdProduct.getByLabel("Sochle purchase check");
+    await expect(belowThresholdCard.getByText("North Trail Insulated Jacket")).toBeVisible();
+    await expect(belowThresholdCard.getByText("₹8,999.00")).toBeVisible();
   } finally {
     await context.close();
     await rm(profilePath, { force: true, recursive: true });

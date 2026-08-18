@@ -1,3 +1,5 @@
+import "@fontsource-variable/geist";
+import "@fontsource-variable/noto-sans-devanagari";
 import { createRoot, type Root } from "react-dom/client";
 
 import { DecisionCard } from "../src/components/decision-card";
