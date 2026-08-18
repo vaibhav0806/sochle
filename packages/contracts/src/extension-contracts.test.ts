@@ -8,11 +8,13 @@ import {
   pairingRequestInputSchema,
   productDecisionRequestSchema,
   purchaseOutcomeSchema,
+  safeProductImageUrl,
 } from "./index";
 
 const extractedProduct = {
   canonicalUrl: "https://www.amazon.in/dp/SYNTHETIC",
   confidence: "high",
+  imageUrl: "https://m.media-amazon.com/images/I/synthetic.jpg",
   merchant: "amazon.in",
   price: { currency: "INR", minor: 49_000_00 },
   title: "Synthetic headphones",
@@ -45,10 +47,32 @@ describe("extension purchase contracts", () => {
   });
 
   it.each([
+    ["amazon.in", "https://m.media-amazon.com/images/I/product.jpg"],
+    ["amazon.in", "https://images.ssl-images-amazon.com/images/I/product.jpg"],
+    ["flipkart.com", "https://rukminim2.flixcart.com/image/product.jpeg"],
+    ["myntra.com", "https://assets.myntraassets.com/h_720,q_90/product.jpg"],
+    ["myntra.com", "https://img.myntra.com/product.jpg"],
+  ] as const)("accepts a safe %s image URL", (merchant, imageUrl) => {
+    expect(safeProductImageUrl(imageUrl, merchant)).toBe(imageUrl);
+  });
+
+  it.each([
+    ["amazon.in", "http://m.media-amazon.com/product.jpg"],
+    ["amazon.in", "https://user@m.media-amazon.com/product.jpg"],
+    ["amazon.in", "javascript:alert(1)"],
+    ["amazon.in", "https://media-amazon.com.attacker.example/product.jpg"],
+    ["flipkart.com", "https://example.com/product.jpg"],
+    ["myntra.com", "not a URL"],
+  ] as const)("rejects an unsafe %s image URL", (merchant, imageUrl) => {
+    expect(safeProductImageUrl(imageUrl, merchant)).toBeNull();
+  });
+
+  it.each([
     ["unsupported merchant", { ...extractedProduct, merchant: "example.com" }],
     ["insecure URL", { ...extractedProduct, canonicalUrl: "http://www.amazon.in/dp/ONE" }],
     ["merchant mismatch", { ...extractedProduct, canonicalUrl: "https://www.flipkart.com/item" }],
     ["URL credentials", { ...extractedProduct, canonicalUrl: "https://user@www.amazon.in/dp/ONE" }],
+    ["unsafe image", { ...extractedProduct, imageUrl: "https://example.com/product.jpg" }],
     ["empty title", { ...extractedProduct, title: "   " }],
     ["zero extracted price", { ...extractedProduct, price: { currency: "INR", minor: 0 } }],
     ["fractional paise", { ...extractedProduct, price: { currency: "INR", minor: 100.5 } }],

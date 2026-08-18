@@ -50,6 +50,7 @@ const fixtureCases: FixtureCase[] = [
     expected: {
       canonicalUrl: "https://www.amazon.in/dp/AMZ001",
       confidence: "high",
+      imageUrl: "https://m.media-amazon.com/images/I/AMZ001.jpg",
       merchant: "amazon.in",
       price: { currency: "INR", minor: 4_500_000 },
       title: "Noise Cancelling Headphones",
@@ -98,6 +99,7 @@ const fixtureCases: FixtureCase[] = [
     expected: {
       canonicalUrl: "https://www.flipkart.com/item/p/FLP001",
       confidence: "high",
+      imageUrl: "https://rukminim2.flixcart.com/image/FLP001.jpeg",
       merchant: "flipkart.com",
       price: { currency: "INR", minor: 8_999_900 },
       title: "Gaming Laptop",
@@ -146,6 +148,7 @@ const fixtureCases: FixtureCase[] = [
     expected: {
       canonicalUrl: "https://www.myntra.com/shoes/MYN001",
       confidence: "high",
+      imageUrl: "https://assets.myntraassets.com/h_720,q_90/MYN001.jpg",
       merchant: "myntra.com",
       price: { currency: "INR", minor: 1_249_900 },
       title: "RunFast Carbon Running Shoes",
@@ -214,7 +217,7 @@ describe("merchant adapters", () => {
     "extracts $merchantDirectory/$fixture deterministically",
     ({ expected, fixture, merchantDirectory, pageUrl }) => {
       const document = fixtureDocument(merchantDirectory, fixture, pageUrl);
-      expect(extractProduct(document, pageUrl)).toEqual(expected);
+      expect(extractProduct(document, pageUrl)).toEqual({ imageUrl: null, ...expected });
     }
   );
 

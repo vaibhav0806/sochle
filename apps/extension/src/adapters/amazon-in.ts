@@ -2,7 +2,13 @@ import { extractedProductSchema } from "@sochle/contracts/browser";
 
 import { parseInrPrice } from "./inr";
 import type { CommerceAdapter } from "./types";
-import { canonicalProductUrl, currentPrices, extractionConfidence, normalizedText } from "./types";
+import {
+  canonicalProductUrl,
+  currentPrices,
+  extractionConfidence,
+  normalizedText,
+  productImageUrl,
+} from "./types";
 
 const currentPriceSelectors = [
   ".apexPriceToPay .a-offscreen",
@@ -21,6 +27,8 @@ const currentPriceContainerSelectors = [
   "#corePriceDisplay_mobile_feature_div .a-price:not(.a-text-price)",
   ".reinventPricePriceToPayMargin",
 ] as const;
+
+const productImageSelectors = ["#landingImage", "#imgBlkFront"] as const;
 
 function visiblePartPrices(document: Document) {
   const seen = new Set<Element>();
@@ -52,6 +60,7 @@ export const amazonIndiaAdapter: CommerceAdapter = {
     return extractedProductSchema.parse({
       canonicalUrl: canonicalProductUrl(document, url, this.merchant),
       confidence: extractionConfidence(prices),
+      imageUrl: productImageUrl(document, productImageSelectors, this.merchant),
       merchant: this.merchant,
       price: prices[0] ?? null,
       title,

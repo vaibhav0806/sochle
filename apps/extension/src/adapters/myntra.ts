@@ -1,12 +1,19 @@
 import { extractedProductSchema } from "@sochle/contracts/browser";
 
 import type { CommerceAdapter } from "./types";
-import { canonicalProductUrl, currentPrices, extractionConfidence, normalizedText } from "./types";
+import {
+  canonicalProductUrl,
+  currentPrices,
+  extractionConfidence,
+  normalizedText,
+  productImageUrl,
+} from "./types";
 
 const currentPriceSelectors = [
   ".pdp-discount-container .pdp-price strong",
   ".pdp-price strong",
 ] as const;
+const productImageSelectors = ["img.image-grid-image", ".image-grid-image img"] as const;
 
 export const myntraAdapter: CommerceAdapter = {
   merchant: "myntra.com",
@@ -19,6 +26,7 @@ export const myntraAdapter: CommerceAdapter = {
     return extractedProductSchema.parse({
       canonicalUrl: canonicalProductUrl(document, url, this.merchant),
       confidence: extractionConfidence(prices),
+      imageUrl: productImageUrl(document, productImageSelectors, this.merchant),
       merchant: this.merchant,
       price: prices[0] ?? null,
       title: title.slice(0, 120),

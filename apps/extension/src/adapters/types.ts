@@ -1,4 +1,8 @@
-import type { ExtractedProduct, Merchant } from "@sochle/contracts/browser";
+import {
+  safeProductImageUrl,
+  type ExtractedProduct,
+  type Merchant,
+} from "@sochle/contracts/browser";
 
 import { parseInrPrice } from "./inr";
 
@@ -24,6 +28,21 @@ export function currentPrices(document: Document, selectors: readonly string[]) 
     }
   }
   return prices;
+}
+
+export function productImageUrl(
+  document: Document,
+  selectors: readonly string[],
+  merchant: Merchant
+): string | null {
+  for (const selector of selectors) {
+    const image = document.querySelector<HTMLImageElement>(selector);
+    const raw = image?.getAttribute("src") ?? image?.getAttribute("data-src");
+    if (raw === null || raw === undefined) continue;
+    const safe = safeProductImageUrl(raw, merchant);
+    if (safe !== null) return safe;
+  }
+  return null;
 }
 
 export function canonicalProductUrl(document: Document, pageUrl: URL, merchant: Merchant): string {

@@ -26,6 +26,7 @@ export {
   merchantSchema,
   productDecisionRequestSchema,
   purchaseOutcomeSchema,
+  safeProductImageUrl,
 } from "./purchases";
 export type {
   ExtractedProduct,
