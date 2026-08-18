@@ -189,7 +189,7 @@ export async function seedOptionalDecisionIssue(): Promise<void> {
         materialityMinor: 45_000_00,
         relatedEntityId: "e2e_optional_transaction",
         relatedEntityType: "transaction",
-        severity: "warning",
+        severity: "blocking",
         type: "large_untagged_transaction",
       },
     ]);

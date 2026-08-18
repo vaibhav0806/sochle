@@ -10,8 +10,10 @@ export default async function MoneyInboxPage() {
   const repository = getRepository();
   const connection = repository === null ? null : await repository.getConnection("fold");
   const issues = connection === null ? [] : await repository!.listOpenIssues(connection.id);
-  const blockingIssues = issues.filter((issue) => issue.severity === "blocking");
-  const optionalIssues = issues.filter((issue) => issue.severity !== "blocking");
+  const isDecisionBlocker = (issue: (typeof issues)[number]) =>
+    issue.severity === "blocking" && issue.type !== "large_untagged_transaction";
+  const blockingIssues = issues.filter(isDecisionBlocker);
+  const optionalIssues = issues.filter((issue) => !isDecisionBlocker(issue));
   const renderIssues = (items: typeof issues) =>
     items.map((issue) => (
       <article className="card stack" key={issue.id}>
