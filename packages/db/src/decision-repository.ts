@@ -15,6 +15,7 @@ import {
   normalizedTransactions,
   purchaseIntents,
   ruleSets,
+  transactionClassificationRules,
 } from "./schema";
 import type { DecisionAuditBundle } from "./schema";
 
@@ -78,8 +79,9 @@ export type OwnerExport = {
   normalizedTransactions: Array<typeof normalizedTransactions.$inferSelect>;
   purchaseIntents: PurchaseIntentRow[];
   ruleSets: RuleSetRow[];
-  schemaVersion: 2;
+  schemaVersion: 3;
   snapshots: Array<typeof financialSnapshots.$inferSelect>;
+  transactionClassificationRules: Array<typeof transactionClassificationRules.$inferSelect>;
 };
 
 export class DecisionRepository {
@@ -459,6 +461,7 @@ export class DecisionRepository {
       decisionRows,
       auditRows,
       pairingRows,
+      classificationRuleRows,
     ] = await Promise.all([
       this.db
         .select()
@@ -493,6 +496,10 @@ export class DecisionRepository {
         })
         .from(extensionPairings)
         .where(eq(extensionPairings.connectionId, connectionId)),
+      this.db
+        .select()
+        .from(transactionClassificationRules)
+        .where(eq(transactionClassificationRules.connectionId, connectionId)),
     ]);
     return {
       auditEvents: auditRows,
@@ -505,8 +512,9 @@ export class DecisionRepository {
       normalizedTransactions: transactionRows,
       purchaseIntents: intentRows,
       ruleSets: ruleRows,
-      schemaVersion: 2,
+      schemaVersion: 3,
       snapshots: snapshotRows,
+      transactionClassificationRules: classificationRuleRows,
     };
   }
 

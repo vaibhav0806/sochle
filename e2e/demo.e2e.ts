@@ -13,3 +13,13 @@ test("synthetic demo exposes the data surfaces without credentials", async ({ pa
   await expect(page.getByRole("heading", { name: "Money Inbox" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "All clear" })).toBeVisible();
 });
+
+test("mobile users retain navigation to the purchase check", async ({ page }) => {
+  await page.setViewportSize({ height: 844, width: 390 });
+  await page.goto("/");
+
+  await expect(page.getByRole("navigation")).toBeVisible();
+  await page.getByRole("link", { name: "Check", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Check it" })).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(390);
+});

@@ -114,3 +114,15 @@ Real owner-authorized Fold OAuth and remote authorization revocation remain manu
 | Permission and payload boundaries         | Exact manifest permission test                                     | `pnpm test:extension-security` scans the built bundle             |
 
 Manual external verification still required before distributing the extension: load the production build and smoke-test one current product page on each supported merchant. Record only pass/fail results and never retain page dumps or financial data.
+
+## Milestone 4 personal-beta matrix
+
+| Capability                              | Unit / integration                                                                                   | E2E / build                                                                                  |
+| --------------------------------------- | ---------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| Planning and status filters             | Planned-date validation, status persistence, and planned-purchase projection                         | Planned date survives reload; planned/waiting filters render the expected history            |
+| Corrections and immutable recalculation | Correction persistence, reusable merchant rules, and predecessor-linked successor decisions          | Blocking issue resolves, latest decision changes, and the original decision remains readable |
+| Weekly review foundation                | Week boundaries, skipped amount, delayed count, and input validation                                 | Local review renders decision and delayed/planned metrics                                    |
+| Export and deletion                     | Export includes classification rules without secrets; connection cascade removes Milestone 4 records | Authenticated schema-v3 export and full deletion; anonymous requests rejected                |
+| Responsive owner access                 | CSS remains implementation-owned                                                                     | Mobile navigation reaches the purchase check without document overflow                       |
+
+The complete Weekly Review projection, selective affected-decision recalculation, visible lineage, live Flipkart/Myntra smoke checks, and four-week dogfooding report remain explicit Milestone 4 gates. See `docs/reports/2026-08-19-release-readiness.md`.

@@ -21,6 +21,7 @@ import {
   financialSnapshots,
   purchaseIntents,
   ruleSets,
+  transactionClassificationRules,
 } from "./schema";
 
 const database = createSochleDatabase(
@@ -311,6 +312,11 @@ describe("DecisionRepository", () => {
   it("exports complete decision data without authorization secrets", async () => {
     const { connection } = await setupDecision();
     const pairing = await setupPairing(connection.id, "c");
+    await database.db.insert(transactionClassificationRules).values({
+      classification: "investment",
+      connectionId: connection.id,
+      merchantKey: "synthetic store",
+    });
     await repository.createAuditEvent({
       connectionId: connection.id,
       details: {},
@@ -326,7 +332,13 @@ describe("DecisionRepository", () => {
           id: pairing.id,
         },
       ],
-      schemaVersion: 2,
+      schemaVersion: 3,
+      transactionClassificationRules: [
+        {
+          classification: "investment",
+          merchantKey: "synthetic store",
+        },
+      ],
     });
     expect(Number.isNaN(Date.parse(exported.exportedAt))).toBe(false);
     expect(exported.decisions).toHaveLength(1);

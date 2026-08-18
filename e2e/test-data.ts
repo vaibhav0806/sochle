@@ -148,6 +148,29 @@ export async function seedDecisionDatabase(): Promise<void> {
   }
 }
 
+export async function seedDecisionIssue(): Promise<void> {
+  const database = createSochleDatabase(e2eDatabaseUrl);
+  try {
+    const repository = new FinancialRepository(database.db);
+    const connection = await repository.getConnection("fold");
+    if (connection === null) throw new Error("E2E financial connection is missing");
+    const snapshot = await repository.getLatestSnapshot(connection.id);
+    if (snapshot === null) throw new Error("E2E financial snapshot is missing");
+    await repository.replaceOpenIssues(connection.id, snapshot.id, [
+      {
+        details: { merchant: "Synthetic Store" },
+        materialityMinor: 45_000_00,
+        relatedEntityId: "e2e_decision_issue_transaction",
+        relatedEntityType: "transaction",
+        severity: "blocking",
+        type: "large_untagged_transaction",
+      },
+    ]);
+  } finally {
+    await database.close();
+  }
+}
+
 export async function resetLiveDatabase(): Promise<void> {
   const database = createSochleDatabase(e2eDatabaseUrl);
   try {

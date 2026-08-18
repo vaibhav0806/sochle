@@ -1,7 +1,7 @@
 import type { Page } from "@playwright/test";
 import { expect, test } from "@playwright/test";
 
-import { resetLiveDatabase, seedDecisionDatabase } from "./test-data";
+import { resetLiveDatabase, seedDecisionDatabase, seedDecisionIssue } from "./test-data";
 
 test.beforeEach(seedDecisionDatabase);
 test.afterEach(resetLiveDatabase);
@@ -52,6 +52,33 @@ test("decision pages and mutations require the owner session", async ({ page }) 
       })
     ).status()
   ).toBe(401);
+});
+
+test("owner navigation renders every implemented web surface without browser errors", async ({
+  page,
+}) => {
+  const browserErrors: string[] = [];
+  page.on("console", (message) => {
+    if (message.type() === "error") browserErrors.push(message.text());
+  });
+  page.on("pageerror", (error) => browserErrors.push(error.message));
+  await loginOwner(page);
+
+  for (const path of [
+    "/",
+    "/today",
+    "/check",
+    "/rules",
+    "/decisions",
+    "/weekly-review",
+    "/connections",
+    "/money-inbox",
+  ]) {
+    await page.goto(path);
+    await expect(page.locator("main")).toBeVisible();
+  }
+
+  expect(browserErrors).toEqual([]);
 });
 
 test("owner configures rules and checks a ₹45,000 purchase", async ({ page }) => {
@@ -105,10 +132,46 @@ test("Today and history expose the stored decision evidence", async ({ page }) =
   await expect(page.getByLabel("Purchase status")).toHaveValue("planned");
   await expect(page.getByLabel("Planned for")).toHaveValue(plannedFor);
 
+  await page.goto("/decisions");
+  await page.getByLabel("Status").selectOption("planned");
+  await page.getByRole("button", { name: "Filter" }).click();
+  await expect(page).toHaveURL(/\/decisions\?status=planned$/);
+  await expect(page.getByRole("link", { name: "Synthetic headphones" })).toBeVisible();
+  await page.getByLabel("Status").selectOption("waiting");
+  await page.getByRole("button", { name: "Filter" }).click();
+  await expect(page.getByRole("heading", { name: "No decisions yet" })).toBeVisible();
+
   await page.goto("/weekly-review");
   await expect(page.getByRole("heading", { name: "Weekly review" })).toBeVisible();
-  await expect(page.getByText("Delayed or planned")).toBeVisible();
+  await expect(
+    page
+      .locator("article")
+      .filter({ hasText: "Delayed or planned" })
+      .getByText("1", { exact: true })
+  ).toBeVisible();
   await expect(page.getByText("Dogfooding progress")).toBeVisible();
+});
+
+test("resolving a blocking issue appends a successor and preserves the original decision", async ({
+  page,
+}) => {
+  await seedDecisionIssue();
+  await createReferenceDecision(page);
+  const originalDecisionUrl = page.url();
+  await expect(page.getByText("Pehle data sort karte hain, phir decision.")).toBeVisible();
+
+  await page.goto("/money-inbox");
+  await page.getByLabel("Classification").selectOption("investment");
+  await page.getByRole("button", { name: "Classify" }).click();
+  await expect(page.getByRole("heading", { name: "All clear" })).toBeVisible();
+
+  await page.goto("/decisions");
+  await page.getByRole("link", { name: "Synthetic headphones" }).click();
+  expect(page.url()).not.toBe(originalDecisionUrl);
+  await expect(page.getByText("Haan, this fits.")).toBeVisible();
+
+  await page.goto(originalDecisionUrl);
+  await expect(page.getByText("Pehle data sort karte hain, phir decision.")).toBeVisible();
 });
 
 test("owner exports then deletes every local record", async ({ page }) => {
@@ -116,7 +179,7 @@ test("owner exports then deletes every local record", async ({ page }) => {
   const exportResponse = await page.request.get("/api/export");
   expect(exportResponse.status()).toBe(200);
   expect(exportResponse.headers()["content-disposition"]).toContain("attachment");
-  expect(await exportResponse.json()).toMatchObject({ schemaVersion: 2 });
+  expect(await exportResponse.json()).toMatchObject({ schemaVersion: 3 });
 
   const rejected = await page.request.post("/api/delete", {
     form: { confirmation: "delete" },
