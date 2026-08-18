@@ -69,7 +69,7 @@ describe("evaluatePurchase", () => {
     expect(result.verdict).toBe("insufficient_confidence");
   });
 
-  it("counts an undated card remainder once and lowers confidence", () => {
+  it("reserves an undated card remainder immediately without blocking confidence", () => {
     const purchase = input();
     purchase.financialState.cardObligations = { currency: "INR", minor: 20_000_00 };
 
@@ -77,8 +77,9 @@ describe("evaluatePurchase", () => {
 
     expect(result.inputs.immediateObligationsMinor).toBe(20_000_00);
     expect(result.headrooms.technicalMinor).toBe(70_000_00);
-    expect(result.confidence.blockingIssueIds).toContain("derived:undated-card-obligation");
-    expect(result.verdict).toBe("insufficient_confidence");
+    expect(result.confidence.blockingIssueIds).not.toContain("derived:undated-card-obligation");
+    expect(result.confidence.level).toBe("high");
+    expect(result.verdict).not.toBe("insufficient_confidence");
   });
 
   it("excludes estimated obligations and marks the assumption unconfirmed", () => {

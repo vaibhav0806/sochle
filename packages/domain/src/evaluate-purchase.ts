@@ -215,7 +215,7 @@ function preparePurchaseCalculation(
       id: "derived:undated-card-obligation",
     });
     derivedIssues.push({
-      effect: null,
+      effect: { maxMinor: 0, minMinor: 0 },
       id: "derived:undated-card-obligation",
       label: "Card obligation with unknown due date",
     });

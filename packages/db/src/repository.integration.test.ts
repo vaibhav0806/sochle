@@ -230,6 +230,33 @@ describe("FinancialRepository", () => {
     await expect(repository.listOpenIssues(connection.id)).resolves.toEqual([]);
   });
 
+  it("does not recreate a corrected transaction issue on a later sync", async () => {
+    const { connection, issue } = await createOpenIssue();
+    await repository.resolveIssue(issue.id, {
+      action: "classify",
+      classification: "consumption",
+    });
+    await repository.persistProjection(connection.id, snapshot);
+    const nextSnapshot = await repository.saveSnapshot(
+      connection.id,
+      { ...snapshot, asOf: "2026-08-17T07:30:00.000Z" },
+      "after-correction"
+    );
+
+    await repository.replaceOpenIssues(connection.id, nextSnapshot.id, [
+      {
+        details: { merchant: "Demo Store" },
+        materialityMinor: 650_000,
+        relatedEntityId: "demo_transaction_1",
+        relatedEntityType: "transaction",
+        severity: "blocking",
+        type: "large_untagged_transaction",
+      },
+    ]);
+
+    await expect(repository.listOpenIssues(connection.id)).resolves.toEqual([]);
+  });
+
   it("applies an opted-in merchant classification rule to later projections", async () => {
     const { connection, issue } = await createOpenIssue();
 
@@ -256,6 +283,23 @@ describe("FinancialRepository", () => {
       .from(normalizedTransactions)
       .where(eq(normalizedTransactions.sourceTransactionId, "demo_transaction_2"));
     expect(transaction?.sochleClassification).toBe("investment");
+
+    const nextSnapshot = await repository.saveSnapshot(
+      connection.id,
+      { ...snapshot, asOf: "2026-08-17T07:30:00.000Z" },
+      "merchant-rule"
+    );
+    await repository.replaceOpenIssues(connection.id, nextSnapshot.id, [
+      {
+        details: { merchant: "Demo Store" },
+        materialityMinor: 650_000,
+        relatedEntityId: "demo_transaction_2",
+        relatedEntityType: "transaction",
+        severity: "blocking",
+        type: "large_untagged_transaction",
+      },
+    ]);
+    await expect(repository.listOpenIssues(connection.id)).resolves.toEqual([]);
   });
 
   it("persists exclusion corrections across later provider projections", async () => {

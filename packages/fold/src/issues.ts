@@ -6,12 +6,7 @@ export type DetectedDataIssue = {
   relatedEntityId: string;
   relatedEntityType: "source" | "transaction";
   severity: "info" | "warning" | "blocking";
-  type:
-    | "large_untagged_transaction"
-    | "missing_source"
-    | "stale_source"
-    | "suspected_card_repayment"
-    | "suspected_transfer";
+  type: "large_untagged_transaction" | "missing_source" | "stale_source";
 };
 
 const decisionSources = new Set<FinancialSource>([
@@ -37,16 +32,25 @@ export function detectDataIssues(
         transaction.amount.minor >= options.largeTransactionMinor
     )
     .map((transaction) => ({
-      details: { merchant: transaction.rawMerchant },
+      details: {
+        liquidityEffectMaxMinor: 0,
+        liquidityEffectMinMinor: 0,
+        merchant: transaction.rawMerchant,
+      },
       materialityMinor: transaction.amount.minor,
       relatedEntityId: transaction.sourceTransactionId,
       relatedEntityType: "transaction",
-      severity: "blocking",
+      severity: "warning",
       type: "large_untagged_transaction",
     }));
 
   const freshnessIssues: DetectedDataIssue[] = state.sourceFreshness.flatMap((source) => {
-    if (source.status !== "stale" && source.status !== "missing") return [];
+    if (
+      !decisionSources.has(source.source) ||
+      (source.status !== "stale" && source.status !== "missing")
+    ) {
+      return [];
+    }
 
     return [
       {
@@ -54,36 +58,11 @@ export function detectDataIssues(
         materialityMinor: 0,
         relatedEntityId: source.source,
         relatedEntityType: "source",
-        severity: decisionSources.has(source.source) ? "blocking" : "info",
+        severity: "blocking",
         type: source.status === "stale" ? "stale_source" : "missing_source",
       },
     ];
   });
 
-  const classificationIssues: DetectedDataIssue[] = state.transactions.flatMap((transaction) => {
-    if (
-      transaction.sochleClassification !== "transfer" &&
-      transaction.sochleClassification !== "credit_card_payment"
-    ) {
-      return [];
-    }
-    return [
-      {
-        details: {
-          detectedClassification: transaction.sochleClassification,
-          merchant: transaction.rawMerchant,
-        },
-        materialityMinor: transaction.amount.minor,
-        relatedEntityId: transaction.sourceTransactionId,
-        relatedEntityType: "transaction",
-        severity: "warning",
-        type:
-          transaction.sochleClassification === "transfer"
-            ? "suspected_transfer"
-            : "suspected_card_repayment",
-      },
-    ];
-  });
-
-  return [...transactionIssues, ...classificationIssues, ...freshnessIssues];
+  return [...transactionIssues, ...freshnessIssues];
 }

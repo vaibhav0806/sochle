@@ -17,6 +17,7 @@ export class DecisionPrerequisiteError extends Error {
 type StoredIssue = {
   details: Record<string, unknown>;
   id: string;
+  severity: "blocking" | "info" | "warning";
   type: string;
 };
 
@@ -49,7 +50,11 @@ export function createDecisionService(
     if (snapshot === null) throw new DecisionPrerequisiteError("snapshot");
     if (ruleSet === null) throw new DecisionPrerequisiteError("rules");
     return {
-      issues: openIssues.map(toDecisionIssue),
+      issues: openIssues
+        .filter(
+          (issue) => issue.severity === "blocking" && issue.type !== "large_untagged_transaction"
+        )
+        .map(toDecisionIssue),
       plannedPurchases: await decisionRepository.listPlannedPurchases(connectionId),
       ruleSet,
       snapshot,

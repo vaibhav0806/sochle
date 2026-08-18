@@ -163,7 +163,57 @@ export async function seedDecisionIssue(): Promise<void> {
         relatedEntityId: "e2e_decision_issue_transaction",
         relatedEntityType: "transaction",
         severity: "blocking",
+        type: "synthetic_variance",
+      },
+    ]);
+  } finally {
+    await database.close();
+  }
+}
+
+export async function seedOptionalDecisionIssue(): Promise<void> {
+  const database = createSochleDatabase(e2eDatabaseUrl);
+  try {
+    const repository = new FinancialRepository(database.db);
+    const connection = await repository.getConnection("fold");
+    if (connection === null) throw new Error("E2E financial connection is missing");
+    const snapshot = await repository.getLatestSnapshot(connection.id);
+    if (snapshot === null) throw new Error("E2E financial snapshot is missing");
+    await repository.replaceOpenIssues(connection.id, snapshot.id, [
+      {
+        details: {
+          liquidityEffectMaxMinor: 0,
+          liquidityEffectMinMinor: 0,
+          merchant: "Synthetic Store",
+        },
+        materialityMinor: 45_000_00,
+        relatedEntityId: "e2e_optional_transaction",
+        relatedEntityType: "transaction",
+        severity: "warning",
         type: "large_untagged_transaction",
+      },
+    ]);
+  } finally {
+    await database.close();
+  }
+}
+
+export async function seedStaleSourceIssue(): Promise<void> {
+  const database = createSochleDatabase(e2eDatabaseUrl);
+  try {
+    const repository = new FinancialRepository(database.db);
+    const connection = await repository.getConnection("fold");
+    if (connection === null) throw new Error("E2E financial connection is missing");
+    const snapshot = await repository.getLatestSnapshot(connection.id);
+    if (snapshot === null) throw new Error("E2E financial snapshot is missing");
+    await repository.replaceOpenIssues(connection.id, snapshot.id, [
+      {
+        details: { refreshedAt: "2026-08-16T06:00:00.000Z" },
+        materialityMinor: 0,
+        relatedEntityId: "credit_cards",
+        relatedEntityType: "source",
+        severity: "blocking",
+        type: "stale_source",
       },
     ]);
   } finally {

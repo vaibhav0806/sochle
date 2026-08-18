@@ -340,15 +340,59 @@ export class FinancialRepository {
 
   async replaceOpenIssues(connectionId: string, snapshotId: string, issues: NewDataIssue[]) {
     return this.db.transaction(async (transaction) => {
+      const [projectedTransactions, correctedTransactions] = await Promise.all([
+        transaction
+          .select({
+            cashFlowInclusion: normalizedTransactions.cashFlowInclusion,
+            sochleClassification: normalizedTransactions.sochleClassification,
+            sourceTransactionId: normalizedTransactions.sourceTransactionId,
+          })
+          .from(normalizedTransactions)
+          .where(eq(normalizedTransactions.connectionId, connectionId)),
+        transaction
+          .select({ relatedEntityId: dataIssues.relatedEntityId })
+          .from(corrections)
+          .innerJoin(dataIssues, eq(corrections.issueId, dataIssues.id))
+          .where(
+            and(
+              eq(dataIssues.connectionId, connectionId),
+              eq(dataIssues.relatedEntityType, "transaction")
+            )
+          ),
+      ]);
+      const projectionBySourceId = new Map(
+        projectedTransactions.map((row) => [row.sourceTransactionId, row])
+      );
+      const correctedSourceIds = new Set(correctedTransactions.map((row) => row.relatedEntityId));
+      const effectiveIssues = issues.filter((issue) => {
+        if (issue.relatedEntityType !== "transaction") return true;
+        if (correctedSourceIds.has(issue.relatedEntityId)) return false;
+        const projected = projectionBySourceId.get(issue.relatedEntityId);
+        if (projected === undefined) return true;
+        if (issue.type === "large_untagged_transaction") {
+          return (
+            projected.cashFlowInclusion === "included" &&
+            projected.sochleClassification === "unclassified"
+          );
+        }
+        if (issue.type === "suspected_transfer") {
+          return projected.sochleClassification === "transfer";
+        }
+        if (issue.type === "suspected_card_repayment") {
+          return projected.sochleClassification === "credit_card_payment";
+        }
+        return true;
+      });
+
       await transaction
         .update(dataIssues)
         .set({ resolvedAt: new Date(), status: "resolved" })
         .where(and(eq(dataIssues.connectionId, connectionId), eq(dataIssues.status, "open")));
 
-      if (issues.length === 0) return [];
+      if (effectiveIssues.length === 0) return [];
       return transaction
         .insert(dataIssues)
-        .values(issues.map((issue) => ({ ...issue, connectionId, snapshotId })))
+        .values(effectiveIssues.map((issue) => ({ ...issue, connectionId, snapshotId })))
         .returning();
     });
   }

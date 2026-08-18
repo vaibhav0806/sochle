@@ -94,6 +94,7 @@ describe("toDecisionIssue", () => {
       toDecisionIssue({
         details: { liquidityEffectMaxMinor: 5_000_00, liquidityEffectMinMinor: -2_000_00 },
         id: "issue-1",
+        severity: "blocking",
         type: "synthetic_variance",
       })
     ).toEqual({
@@ -110,7 +111,12 @@ describe("toDecisionIssue", () => {
     { liquidityEffectMaxMinor: 1.5, liquidityEffectMinMinor: 0 },
   ])("treats invalid or absent bounds as unbounded", (details) => {
     expect(
-      toDecisionIssue({ details, id: "issue-1", type: "synthetic_variance" }).effect
+      toDecisionIssue({
+        details,
+        id: "issue-1",
+        severity: "blocking",
+        type: "synthetic_variance",
+      }).effect
     ).toBeNull();
   });
 });
@@ -134,6 +140,40 @@ describe("decision service", () => {
     ).resolves.toMatchObject({
       decision: { auditBundle: { result: saved.result } },
     });
+  });
+
+  it("does not let optional review items block purchase confidence", async () => {
+    const { connection, snapshot } = await seedPrerequisites();
+    const optionalIssues = await financialRepository.replaceOpenIssues(connection.id, snapshot.id, [
+      {
+        details: {},
+        materialityMinor: 45_000_00,
+        relatedEntityId: "optional-warning",
+        relatedEntityType: "transaction",
+        severity: "warning",
+        type: "synthetic_optional_review",
+      },
+      {
+        details: {},
+        materialityMinor: 45_000_00,
+        relatedEntityId: "legacy-large-untagged",
+        relatedEntityType: "transaction",
+        severity: "blocking",
+        type: "large_untagged_transaction",
+      },
+    ]);
+
+    const saved = await service.checkPurchase({
+      connectionId: connection.id,
+      description: "Synthetic headphones",
+      evaluatedAt,
+      priceMinor: 45_000_00,
+    });
+
+    expect(optionalIssues).toHaveLength(2);
+    for (const issue of optionalIssues) {
+      expect(saved.result.confidence.blockingIssueIds).not.toContain(issue.id);
+    }
   });
 
   it("creates a cached-snapshot decision in under five seconds", async () => {

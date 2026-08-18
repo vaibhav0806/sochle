@@ -1,7 +1,13 @@
 import type { Page } from "@playwright/test";
 import { expect, test } from "@playwright/test";
 
-import { resetLiveDatabase, seedDecisionDatabase, seedDecisionIssue } from "./test-data";
+import {
+  resetLiveDatabase,
+  seedDecisionDatabase,
+  seedDecisionIssue,
+  seedOptionalDecisionIssue,
+  seedStaleSourceIssue,
+} from "./test-data";
 
 test.beforeEach(seedDecisionDatabase);
 test.afterEach(resetLiveDatabase);
@@ -172,6 +178,35 @@ test("resolving a blocking issue appends a successor and preserves the original 
 
   await page.goto(originalDecisionUrl);
   await expect(page.getByText("Pehle data sort karte hain, phir decision.")).toBeVisible();
+});
+
+test("optional transaction cleanup is labelled and does not block a purchase", async ({ page }) => {
+  await seedOptionalDecisionIssue();
+  await loginOwner(page);
+  await page.goto("/money-inbox");
+  await expect(page.getByRole("heading", { name: "Optional cleanup" })).toBeVisible();
+  await expect(page.getByText("These items do not block purchase decisions.")).toBeVisible();
+
+  await page.goto("/check");
+  await page.getByLabel("What are you considering?").fill("Synthetic headphones");
+  await page.getByLabel("Price").fill("45000");
+  await page.getByRole("button", { name: "Sochle" }).click();
+  await expect(page.getByText("Haan, this fits.")).toBeVisible();
+});
+
+test("a stale Fold source shows refresh guidance instead of transaction controls", async ({
+  page,
+}) => {
+  await seedStaleSourceIssue();
+  await loginOwner(page);
+  await page.goto("/money-inbox");
+
+  await expect(page.getByRole("heading", { name: "Needs attention" })).toBeVisible();
+  await expect(
+    page.getByText("Refresh this source in Fold, then sync Sochle again.")
+  ).toBeVisible();
+  await expect(page.getByRole("link", { name: "Open data connections" })).toBeVisible();
+  await expect(page.getByLabel("Classification")).toHaveCount(0);
 });
 
 test("owner exports then deletes every local record", async ({ page }) => {
