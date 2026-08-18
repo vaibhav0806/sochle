@@ -68,12 +68,15 @@ export class FoldSyncCoordinator {
     private readonly options: { minimumIntervalMs: number; now: () => Date }
   ) {}
 
-  async sync(connectionId: string): Promise<SyncResult> {
+  async sync(
+    connectionId: string,
+    options: { trigger: "automatic" | "manual" } = { trigger: "automatic" }
+  ): Promise<SyncResult> {
     const startedAt = this.options.now();
     const gate = await this.repository.beginSync(
       connectionId,
       startedAt,
-      this.options.minimumIntervalMs
+      options.trigger === "manual" ? 0 : this.options.minimumIntervalMs
     );
 
     if (gate.kind !== "started") {

@@ -8,6 +8,7 @@ import { getServerEnv } from "../../../lib/server/env";
 
 export async function POST(request: Request) {
   const serverEnv = getServerEnv();
+  const automatic = new URL(request.url).searchParams.get("automatic") === "1";
   if (!(await isOwnerAuthenticated())) return new Response("Unauthorized", { status: 401 });
   const repository = getRepository();
   if (repository === null) return new Response("Live data is disabled", { status: 503 });
@@ -30,10 +31,12 @@ export async function POST(request: Request) {
         now: () => new Date(),
       }
     );
-    const result = await coordinator.sync(connection.id);
+    const result = await coordinator.sync(connection.id, {
+      trigger: automatic ? "automatic" : "manual",
+    });
     const detail =
       result.status === "fresh" ? "sync_complete" : `${result.status}_${result.reason}`;
-    if (new URL(request.url).searchParams.get("automatic") === "1") {
+    if (automatic) {
       return NextResponse.json({ result: detail });
     }
     return NextResponse.redirect(

@@ -15,9 +15,11 @@ class MemorySyncRepository implements SyncRepository {
   };
   latest: { id: string; state: NormalizedFinancialState } | null = null;
   completed: "failed" | "succeeded" | null = null;
+  minimumIntervalMs: number | null = null;
   persisted = false;
 
-  async beginSync() {
+  async beginSync(_connectionId: string, _startedAt: Date, minimumIntervalMs: number) {
+    this.minimumIntervalMs = minimumIntervalMs;
     return this.gate;
   }
   async completeSync(
@@ -122,6 +124,30 @@ describe("FoldSyncCoordinator", () => {
       status: "cached",
     });
     expect(providerCalls).toBe(0);
+  });
+
+  it("bypasses the successful-sync cooldown only for a manual trigger", async () => {
+    const automaticRepository = new MemorySyncRepository();
+    const manualRepository = new MemorySyncRepository();
+    const provider: FinancialDataProvider = {
+      async sync() {
+        return state;
+      },
+    };
+    const options = {
+      minimumIntervalMs: 60 * 60 * 1000,
+      now: () => new Date("2026-08-17T06:30:00.000Z"),
+    };
+
+    await new FoldSyncCoordinator(provider, automaticRepository, options).sync("demo_connection", {
+      trigger: "automatic",
+    });
+    await new FoldSyncCoordinator(provider, manualRepository, options).sync("demo_connection", {
+      trigger: "manual",
+    });
+
+    expect(automaticRepository.minimumIntervalMs).toBe(60 * 60 * 1000);
+    expect(manualRepository.minimumIntervalMs).toBe(0);
   });
 
   it("returns unavailable when no cached snapshot exists", async () => {
