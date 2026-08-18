@@ -35,8 +35,9 @@ async function createReferenceDecision(page: Page) {
   await page.getByRole("button", { name: "Save rules" }).click();
   await page.goto("/check");
   await page.getByLabel("What are you considering?").fill("Synthetic headphones");
-  await page.getByLabel("Price").fill("45000");
-  await page.getByRole("button", { name: "Sochle" }).click();
+  await page.getByLabel("Price in rupees").fill("45000");
+  await page.getByRole("button", { name: "Does this fit?" }).click();
+  await page.getByRole("link", { name: "Full decision" }).click();
 }
 
 test("decision pages and mutations require the owner session", async ({ page }) => {
@@ -121,8 +122,14 @@ test("owner configures rules and checks a ₹45,000 purchase", async ({ page }) 
 
   await page.goto("/check");
   await page.getByLabel("What are you considering?").fill("Synthetic headphones");
-  await page.getByLabel("Price").fill("45000");
-  await page.getByRole("button", { name: "Sochle" }).click();
+  await page.getByLabel("Price in rupees").fill("45000");
+  await page.getByRole("button", { name: "Does this fit?" }).click();
+  await expect(page).toHaveURL(/\/check$/);
+  await expect(page.getByRole("heading", { name: "Yes, this fits comfortably." })).toBeVisible();
+  await expect(page.locator("details").filter({ hasText: "See the maths" })).not.toHaveAttribute(
+    "open"
+  );
+  await page.getByRole("link", { name: "Full decision" }).click();
   await expect(page).toHaveURL(/\/decisions\/[0-9a-f-]+$/);
   await expect(page.getByText("Haan, this fits.")).toBeVisible();
   const detailUrl = page.url();
@@ -205,9 +212,9 @@ test("optional transaction cleanup is labelled and does not block a purchase", a
 
   await page.goto("/check");
   await page.getByLabel("What are you considering?").fill("Synthetic headphones");
-  await page.getByLabel("Price").fill("45000");
-  await page.getByRole("button", { name: "Sochle" }).click();
-  await expect(page.getByText("Haan, this fits.")).toBeVisible();
+  await page.getByLabel("Price in rupees").fill("45000");
+  await page.getByRole("button", { name: "Does this fit?" }).click();
+  await expect(page.getByText("Yes, this fits comfortably.")).toBeVisible();
 });
 
 test("a stale Fold source shows refresh guidance instead of transaction controls", async ({

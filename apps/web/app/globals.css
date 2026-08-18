@@ -221,6 +221,59 @@ h2 {
   font-weight: 450;
   line-height: 1.5;
 }
+.purchase-composer {
+  border-bottom: 1px solid var(--border);
+  border-top: 1px solid var(--border);
+  display: grid;
+  gap: 2rem;
+  margin-top: 2.5rem;
+  padding: 1.5rem 0;
+}
+.purchase-composer form button {
+  justify-self: start;
+  min-width: 10rem;
+}
+.purchase-result {
+  border-left: 3px solid var(--action);
+  display: grid;
+  gap: 0.75rem;
+  padding: 0.35rem 0 0.35rem 1.25rem;
+}
+.purchase-result h2,
+.purchase-result p {
+  margin: 0;
+}
+.purchase-result h2 {
+  font-size: clamp(1.8rem, 5vw, 2.6rem);
+  letter-spacing: -0.045em;
+  line-height: 1.05;
+}
+.purchase-result.tone-tradeoff,
+.purchase-result.tone-wait,
+.purchase-result.tone-tight {
+  border-left-color: var(--caution);
+}
+.purchase-result.tone-no,
+.purchase-result.tone-needs-input {
+  border-left-color: var(--negative);
+}
+.purchase-suggestion {
+  color: var(--ink);
+  font-weight: 650;
+}
+.purchase-result details {
+  border-top: 1px solid var(--border);
+  margin-top: 0.5rem;
+  padding-top: 0.85rem;
+}
+.purchase-result summary {
+  color: var(--action);
+  cursor: pointer;
+  font-weight: 700;
+}
+.purchase-result dl {
+  margin-top: 1rem;
+}
 .stack {
   display: grid;
   gap: 1rem;

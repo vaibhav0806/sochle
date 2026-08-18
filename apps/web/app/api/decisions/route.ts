@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { parseRupeesToMinor } from "../../../lib/money";
+import { parsePurchaseInput, PurchaseInputError } from "../../../lib/purchase-input";
 import { isOwnerAuthenticated } from "../../../lib/server/auth";
 import { getDecisionRepository, getRepository } from "../../../lib/server/database";
 import {
@@ -21,23 +21,15 @@ export async function POST(request: Request) {
 
   try {
     const form = await request.formData();
-    const rawDescription = form.get("description");
-    const rawPrice = form.get("price");
-    if (typeof rawDescription !== "string" || typeof rawPrice !== "string") {
-      return new Response("Invalid purchase", { status: 400 });
-    }
-    const description = rawDescription.trim();
-    if (description.length === 0 || description.length > 120) {
-      return new Response("Invalid purchase", { status: 400 });
-    }
+    const input = parsePurchaseInput(form);
     const saved = await createDecisionService(
       financialRepository,
       decisionRepository
     ).checkPurchase({
       connectionId: connection.id,
-      description,
+      description: input.description,
       evaluatedAt: new Date().toISOString(),
-      priceMinor: parseRupeesToMinor(rawPrice),
+      priceMinor: input.priceMinor,
     });
     return NextResponse.redirect(
       new URL(`/decisions/${saved.decision.id}`, getServerEnv().SOCHLE_APP_URL),
@@ -46,6 +38,9 @@ export async function POST(request: Request) {
   } catch (error) {
     if (error instanceof DecisionPrerequisiteError) {
       return new Response(error.message, { status: 409 });
+    }
+    if (error instanceof PurchaseInputError) {
+      return new Response("Invalid purchase", { status: 400 });
     }
     return new Response("Invalid purchase", { status: 400 });
   }
