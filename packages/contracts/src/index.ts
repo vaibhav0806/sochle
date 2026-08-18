@@ -38,3 +38,10 @@ export type {
   ProductDecisionRequest,
   PurchaseOutcome,
 } from "./purchases";
+export {
+  decisionMathsRowSchema,
+  decisionPresentationSchema,
+  decisionToneSchema,
+  forbiddenPrimaryTerms,
+} from "./presentation";
+export type { DecisionMathsRow, DecisionPresentation, DecisionTone } from "./presentation";
