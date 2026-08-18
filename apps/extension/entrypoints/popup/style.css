@@ -92,7 +92,7 @@ p {
 }
 
 .merchant-list {
-  color: #68736b;
+  color: #5e6861;
   font-size: 0.78rem;
   margin-bottom: 1rem;
 }
@@ -156,7 +156,7 @@ button:disabled {
 
 .connection-details {
   border-top: 1px solid #ddd5c6;
-  color: #68736b;
+  color: #5e6861;
   font-size: 0.76rem;
   margin-top: 1.25rem;
   padding-top: 0.85rem;
@@ -200,7 +200,7 @@ button:disabled {
 
 .text-button {
   background: transparent;
-  color: #68736b;
+  color: #5e6861;
   padding: 0.25rem 0;
   text-decoration: underline;
 }
@@ -223,13 +223,60 @@ button:disabled {
   }
 }
 
+@media (prefers-color-scheme: dark) {
+  :root {
+    color: #f0f3ed;
+    color-scheme: dark;
+  }
+
+  body {
+    background: #101511;
+  }
+
+  p,
+  .merchant-list,
+  .connection-details,
+  .text-button {
+    color: #aab3ab;
+  }
+
+  .status-dot {
+    background: #8fc7a2;
+    border-color: #26382c;
+  }
+
+  .primary {
+    background: #8fc7a2;
+    color: #101511;
+  }
+
+  .secondary {
+    background: #29312b;
+    color: #f0f3ed;
+  }
+
+  .connection-details {
+    border-color: #2a332c;
+  }
+
+  .connection-details dd {
+    color: #f0f3ed;
+  }
+
+  [role="alert"] {
+    background: #3b2420;
+    border-color: #65372d;
+    color: #ffb3a4;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
-    animation-duration: 0.01ms !important;
+    animation-duration: 0s !important;
     animation-iteration-count: 1 !important;
     scroll-behavior: auto !important;
-    transition-duration: 0.01ms !important;
+    transition-duration: 0s !important;
   }
 }

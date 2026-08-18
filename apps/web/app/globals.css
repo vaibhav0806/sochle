@@ -6,7 +6,7 @@
   --muted-ink: #5e6861;
   --action: #183c2a;
   --action-ink: #ffffff;
-  --accent: #c55a38;
+  --accent: #a9472d;
   --positive: #2e6a47;
   --caution: #8a641f;
   --negative: #a33a32;
@@ -795,10 +795,10 @@ pre {
   *,
   *::before,
   *::after {
-    animation-duration: 0.01ms !important;
+    animation-duration: 0s !important;
     animation-iteration-count: 1 !important;
     scroll-behavior: auto !important;
-    transition-duration: 0.01ms !important;
+    transition-duration: 0s !important;
   }
 }
 
@@ -809,12 +809,18 @@ pre {
     gap: 1rem;
   }
   .primary-navigation {
-    overflow-x: auto;
+    display: grid;
+    gap: 0.35rem;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     padding-bottom: 0.25rem;
     white-space: nowrap;
+    width: 100%;
   }
   .primary-navigation a {
-    flex: 0 0 auto;
+    font-size: 0.82rem;
+    min-width: 0;
+    padding-inline: 0.25rem;
+    text-align: center;
   }
   .actions {
     align-items: stretch;

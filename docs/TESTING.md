@@ -58,9 +58,10 @@ Before a milestone is marked complete or pushed to `main`:
 6. Run `pnpm test:unit`.
 7. Run `pnpm test:integration`.
 8. Run `pnpm test:coverage`.
-9. Run `pnpm build`.
-10. Run `pnpm e2e`.
-11. Check `git diff --check` and confirm no secrets or real financial payloads are present.
+9. Run `pnpm test:extension-security`.
+10. Run `pnpm build`.
+11. Run `pnpm e2e`.
+12. Check `git diff --check` and confirm no secrets or real financial payloads are present.
 
 CI must run the same gate. A retry is diagnostic, not evidence that a flaky test passes. A flaky test blocks the milestone until it is made deterministic or removed with an explicit loss-of-coverage explanation.
 
@@ -126,3 +127,21 @@ Manual external verification still required before distributing the extension: l
 | Responsive owner access                 | CSS remains implementation-owned                                                                     | Mobile navigation reaches the purchase check without document overflow                       |
 
 The complete Weekly Review projection, selective affected-decision recalculation, visible lineage, live Flipkart/Myntra smoke checks, and four-week dogfooding report remain explicit Milestone 4 gates. See `docs/reports/2026-08-19-release-readiness.md`.
+
+## Product-experience regression matrix
+
+The primary interface explains only whether a purchase fits, why the answer matters, and what the user can do next. Raw provider names, internal field names, confidence scores, headroom calculations, and synchronization mechanics belong behind an optional evidence disclosure or an owner-only technical surface.
+
+| Risk                                      | Automated evidence                                                                                        |
+| ----------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| Internal terminology leaks into core UX   | Browser assertions scan the ten primary web states for the forbidden product-language contract            |
+| Inaccessible colors or controls           | Axe scans the ten primary web states, extension popup, and extension decision card                        |
+| Keyboard users lose their place           | The skip link and primary purchase flow expose visible focus indicators                                   |
+| Motion cannot be disabled                 | Reduced-motion emulation removes CSS animation and transition duration                                    |
+| Small or large viewports break the layout | The critical purchase journey is checked at 320, 390, 768, and 1440 pixels without document overflow      |
+| Dark mode becomes unreadable              | Web decision detail and extension result card have dark-scheme visual baselines and accessibility checks  |
+| Component states regress                  | Idle/result purchase checks plus detected/result extension cards are exercised as distinct browser states |
+| Merchant behavior drifts                  | Synthetic Amazon India, Flipkart, and Myntra journeys run against the production extension build          |
+| Cosmetic changes silently alter the UI    | Committed screenshots cover ten web states and four extension states                                      |
+
+Visual baselines change only with deliberate design review. Before updating them, inspect the rendered difference at desktop and mobile sizes, confirm that the change preserves hierarchy and product language, and include the reviewed images in the same commit. External merchant smoke tests remain necessary because merchant DOM changes cannot be proven by synthetic fixtures alone.

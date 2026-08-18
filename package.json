@@ -24,8 +24,10 @@
     "typecheck": "pnpm --recursive --if-present run typecheck && tsc -p tsconfig.tests.json"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
     "@eslint/js": "^9.39.2",
     "@playwright/test": "^1.62.1",
+    "@sochle/contracts": "workspace:*",
     "@sochle/db": "workspace:*",
     "@sochle/domain": "workspace:*",
     "@types/node": "^24.10.1",

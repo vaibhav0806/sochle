@@ -7,12 +7,18 @@ settings:
 importers:
   .:
     devDependencies:
+      "@axe-core/playwright":
+        specifier: ^4.13.0
+        version: 4.13.0(playwright-core@1.62.1)
       "@eslint/js":
         specifier: ^9.39.2
         version: 9.39.5
       "@playwright/test":
         specifier: ^1.62.1
         version: 1.62.1
+      "@sochle/contracts":
+        specifier: workspace:*
+        version: link:packages/contracts
       "@sochle/db":
         specifier: workspace:*
         version: link:packages/db
@@ -208,6 +214,14 @@ packages:
       {
         integrity: sha512-07a596Bd1QO0bi3tIyt2xruq6vKk7hCUt9enHBwggvipB0iiycoJ9/CqzN6UFawaKbOi6NBfMlUxUXzIOZ7Dsg==,
       }
+
+  "@axe-core/playwright@4.13.0":
+    resolution:
+      {
+        integrity: sha512-6YLx+kxXu5GJceG4ozFg+33a2EMTdjYwWGloJ3sb9Kta5pp+ZNS53uxGVog5JetIY8s++P5UrtX+cri+u0VAVg==,
+      }
+    peerDependencies:
+      playwright-core: ">= 1.0.0"
 
   "@babel/code-frame@7.29.7":
     resolution:
@@ -1956,6 +1970,13 @@ packages:
       {
         integrity: sha512-UPAgKJFSEGMWSDr3LX4tqnAb4f7KGT8O40Tyx8wbYmmZ/yn58lNCm8h3svs3eXgiGd5AXxz8NDOvXWvicq+rJA==,
       }
+
+  axe-core@4.13.0:
+    resolution:
+      {
+        integrity: sha512-UzGt8zg7Ny8djbYMhxl2zuEevVa7r2gJjYY5Lwr1xM7+XU2nd6CkIWFTVcCIbAP63vSz71NaVyyuSk9lHKcy0A==,
+      }
+    engines: { node: ">=4" }
 
   balanced-match@1.0.2:
     resolution:
@@ -3936,6 +3957,11 @@ snapshots:
 
   "@aklinker1/zero-zip@1.0.1": {}
 
+  "@axe-core/playwright@4.13.0(playwright-core@1.62.1)":
+    dependencies:
+      axe-core: 4.13.0
+      playwright-core: 1.62.1
+
   "@babel/code-frame@7.29.7":
     dependencies:
       "@babel/helper-validator-identifier": 7.29.7
@@ -4763,6 +4789,8 @@ snapshots:
       "@jridgewell/trace-mapping": 0.3.31
       estree-walker: 3.0.3
       js-tokens: 10.0.0
+
+  axe-core@4.13.0: {}
 
   balanced-match@1.0.2: {}
 

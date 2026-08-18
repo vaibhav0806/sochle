@@ -179,7 +179,7 @@ button {
 }
 
 .sochle-recency {
-  color: #68736b;
+  color: #5e6861;
   font-size: 0.72rem;
   font-weight: 620;
 }
@@ -252,7 +252,7 @@ button {
 
 .sochle-outcomes .sochle-not-relevant {
   background: transparent;
-  color: #68736b;
+  color: #5e6861;
   text-decoration: underline;
 }
 
@@ -291,13 +291,74 @@ button {
   }
 }
 
+@media (prefers-color-scheme: dark) {
+  :host {
+    color: #f0f3ed;
+    color-scheme: dark;
+  }
+
+  .sochle-card {
+    background: #171d18;
+    border-color: #2a332c;
+    box-shadow: 0 1.25rem 3.5rem rgb(0 0 0 / 38%);
+  }
+
+  .sochle-card p,
+  .sochle-card dl,
+  .sochle-close,
+  .sochle-link,
+  .sochle-recency,
+  .sochle-stack label {
+    color: #aab3ab;
+  }
+
+  .sochle-product > img,
+  .sochle-stack input {
+    background: #101511;
+    border-color: #354038;
+    color: #f0f3ed;
+  }
+
+  .sochle-stack > button:not(.sochle-close, .sochle-link) {
+    background: #8fc7a2;
+    color: #101511;
+  }
+
+  .sochle-action,
+  .sochle-card dd {
+    color: #f0f3ed !important;
+  }
+
+  .sochle-result details,
+  .sochle-outcomes button {
+    background: #252c26;
+    color: #f0f3ed;
+  }
+
+  .sochle-outcomes,
+  .sochle-result details {
+    border-color: #2a332c;
+  }
+
+  .sochle-outcomes .sochle-not-relevant {
+    background: transparent;
+    color: #aab3ab;
+  }
+
+  [role="alert"] {
+    background: #3b2420;
+    border-color: #65372d;
+    color: #ffb3a4 !important;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
-    animation-duration: 0.01ms !important;
+    animation-duration: 0s !important;
     animation-iteration-count: 1 !important;
     scroll-behavior: auto !important;
-    transition-duration: 0.01ms !important;
+    transition-duration: 0s !important;
   }
 }

@@ -3,6 +3,7 @@ import { readFile, mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { resolve } from "node:path";
 
+import AxeBuilder from "@axe-core/playwright";
 import { chromium, expect, test } from "@playwright/test";
 import { createSochleDatabase, ExtensionRepository, FinancialRepository } from "@sochle/db";
 
@@ -66,6 +67,9 @@ test("a paired extension evaluates a product and records an outcome", async () =
 
     await expect(popup.getByRole("heading", { name: "सोचle." })).toBeVisible();
     await expect(popup.getByRole("heading", { name: "Ready to check" })).toBeVisible();
+    await popup.setViewportSize({ height: 540, width: 368 });
+    await expect(popup).toHaveScreenshot("extension-popup-ready.png", { animations: "disabled" });
+    expect((await new AxeBuilder({ page: popup }).analyze()).violations).toEqual([]);
 
     const fixture = await readFile("apps/extension/test/fixtures/amazon-in/primary.html", "utf8");
     const product = await context.newPage();
@@ -82,6 +86,7 @@ test("a paired extension evaluates a product and records an outcome", async () =
     const card = product.getByLabel("Sochle purchase check");
     await expect(card.getByText("Noise Cancelling Headphones")).toBeVisible();
     await expect(card.getByText("₹45,000.00")).toBeVisible();
+    await expect(card).toHaveScreenshot("extension-card-detected.png", { animations: "disabled" });
     await card.getByRole("button", { name: "Check this purchase" }).click();
     await expect(card.getByText("Yes, this fits comfortably.")).toBeVisible();
     await expect(card.getByText("Based on your latest available picture")).toBeVisible();
@@ -89,6 +94,24 @@ test("a paired extension evaluates a product and records an outcome", async () =
     await expect(card).not.toContainText(
       /confidence|freshness|projected liquidity|headroom|fold|uncaught error/i
     );
+    await expect(card).toHaveScreenshot("extension-card-result.png", { animations: "disabled" });
+    expect(
+      (
+        await new AxeBuilder({ page: product })
+          .disableRules([
+            "document-title",
+            "html-has-lang",
+            "image-alt",
+            "landmark-one-main",
+            "region",
+          ])
+          .analyze()
+      ).violations
+    ).toEqual([]);
+    await product.emulateMedia({ colorScheme: "dark" });
+    await expect(card).toHaveScreenshot("extension-card-result-dark.png", {
+      animations: "disabled",
+    });
     await card.getByRole("button", { name: "Wait" }).click();
     await expect(card.getByText("Saved")).toBeVisible();
   } finally {

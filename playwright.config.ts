@@ -21,7 +21,7 @@ export default defineConfig({
     },
     {
       name: "live-chromium",
-      testMatch: /(?:live|decision-core)\.e2e\.ts/,
+      testMatch: /(?:live|decision-core|product-experience)\.e2e\.ts/,
       use: { ...devices["Desktop Chrome"], baseURL: "http://127.0.0.1:3101" },
     },
   ],
@@ -38,7 +38,7 @@ export default defineConfig({
     {
       command: "pnpm --filter @sochle/web start --hostname 127.0.0.1 --port 3100",
       env: { ...process.env, SOCHLE_DEMO_MODE: "true" },
-      reuseExistingServer: !process.env.CI,
+      reuseExistingServer: false,
       timeout: 30_000,
       url: "http://127.0.0.1:3100",
     },
@@ -53,7 +53,7 @@ export default defineConfig({
         SOCHLE_SESSION_SECRET: "synthetic-session-secret-at-least-32-characters",
         SOCHLE_TOKEN_ENCRYPTION_KEY: Buffer.alloc(32, 7).toString("base64"),
       },
-      reuseExistingServer: !process.env.CI,
+      reuseExistingServer: false,
       timeout: 30_000,
       url: "http://127.0.0.1:3101/login",
     },
