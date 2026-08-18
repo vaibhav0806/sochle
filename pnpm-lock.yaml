@@ -77,6 +77,12 @@ importers:
 
   apps/web:
     dependencies:
+      "@fontsource-variable/geist":
+        specifier: ^5.3.0
+        version: 5.3.0
+      "@fontsource-variable/noto-sans-devanagari":
+        specifier: ^5.3.0
+        version: 5.3.0
       "@sochle/contracts":
         specifier: workspace:*
         version: link:../../packages/contracts
@@ -102,12 +108,21 @@ importers:
         specifier: ^4.3.5
         version: 4.4.3
     devDependencies:
+      "@testing-library/dom":
+        specifier: ^10.4.1
+        version: 10.4.1
+      "@testing-library/react":
+        specifier: ^16.3.2
+        version: 16.3.2(@testing-library/dom@10.4.1)(@types/react-dom@19.2.4(@types/react@19.2.18))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       "@types/react":
         specifier: ^19.2.7
         version: 19.2.18
       "@types/react-dom":
         specifier: ^19.2.3
         version: 19.2.4(@types/react@19.2.18)
+      happy-dom:
+        specifier: ^20.11.2
+        version: 20.11.2
 
   packages/contracts:
     dependencies:
@@ -994,6 +1009,18 @@ packages:
         integrity: sha512-43/qtrDUokr7LJqoF2c3+RInu/t4zfrpYdoSDfYyhg52rwLV6TnOvdG4fXm7IkSB3wErkcmJS9iEhjVtOSEjjA==,
       }
     engines: { node: ^18.18.0 || ^20.9.0 || >=21.1.0 }
+
+  "@fontsource-variable/geist@5.3.0":
+    resolution:
+      {
+        integrity: sha512-j0m+vLQuG5XAYoHtGCVu0spvlGreR3EzpECUVzkFmI1mTVnAO38l/NEPDCFgZ177JxzYJCLSmTQibIiYPilGrA==,
+      }
+
+  "@fontsource-variable/noto-sans-devanagari@5.3.0":
+    resolution:
+      {
+        integrity: sha512-52XBcJS3jRvZ5ugFXJvdKgffXPYnN08LeodXkgCbepOdMKVRVTQu1yj071cq8S3zmUwT6w6XKKXRSQlQkwwNNg==,
+      }
 
   "@humanfs/core@0.19.2":
     resolution:
@@ -4210,6 +4237,10 @@ snapshots:
     dependencies:
       "@eslint/core": 0.17.0
       levn: 0.4.1
+
+  "@fontsource-variable/geist@5.3.0": {}
+
+  "@fontsource-variable/noto-sans-devanagari@5.3.0": {}
 
   "@humanfs/core@0.19.2":
     dependencies:

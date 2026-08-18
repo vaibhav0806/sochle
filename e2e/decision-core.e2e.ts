@@ -70,6 +70,21 @@ test("owner navigation renders every implemented web surface without browser err
   page.on("pageerror", (error) => browserErrors.push(error.message));
   await loginOwner(page);
 
+  await page.goto("/");
+  const primaryNavigation = page.getByRole("navigation", { name: "Primary navigation" });
+  await expect(primaryNavigation.getByRole("link")).toHaveText([
+    "Home",
+    "Check",
+    "Decisions",
+    "Settings",
+  ]);
+  await primaryNavigation.getByRole("link", { name: "Settings" }).click();
+  await expect(page).toHaveURL(/\/settings$/);
+  await expect(page.getByRole("link", { name: /My guardrails/ })).toBeVisible();
+  await expect(page.getByRole("link", { name: /Connected account and browser/ })).toBeVisible();
+  await expect(page.getByRole("link", { name: /Privacy and data/ })).toBeVisible();
+  await expect(page.getByRole("link", { name: /Technical details/ })).toBeVisible();
+
   for (const path of [
     "/",
     "/today",
@@ -79,6 +94,7 @@ test("owner navigation renders every implemented web surface without browser err
     "/weekly-review",
     "/connections",
     "/money-inbox",
+    "/settings",
   ]) {
     await page.goto(path);
     await expect(page.locator("main")).toBeVisible();
