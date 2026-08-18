@@ -183,12 +183,12 @@ function preparePurchaseCalculation(
   const horizonEnd = resolveForecastHorizon(rules, evaluatedOn);
   const configuredSalaryDate = nextSalaryDate(rules.salary.dayOfMonth, evaluatedOn);
   const derivedIssues: DecisionIssue[] = [];
-  let assumptionsConfirmed = rules.salary.confirmed;
+  let assumptionsConfirmed = true;
 
   const income: DatedAmount[] = [];
   for (const expected of input.financialState.expectedIncome) {
     if (expected.certainty === "estimated") {
-      assumptionsConfirmed = false;
+      if (inRange(expected.dueOn, evaluatedOn, horizonEnd)) assumptionsConfirmed = false;
       continue;
     }
     if (inRange(expected.dueOn, evaluatedOn, horizonEnd)) {
@@ -229,7 +229,7 @@ function preparePurchaseCalculation(
   let datedCardObligationsMinor = 0;
   for (const obligation of input.financialState.upcomingObligations) {
     if (obligation.certainty === "estimated") {
-      assumptionsConfirmed = false;
+      if (inRange(obligation.dueOn, evaluatedOn, horizonEnd)) assumptionsConfirmed = false;
       continue;
     }
     const treatment = (obligation as typeof obligation & { budgetTreatment?: string })
@@ -447,7 +447,11 @@ export function evaluatePurchase(input: EvaluatePurchaseInput): DecisionResult {
   );
   if (recovery !== null) blockingIssueLabels.unshift(recovery.blocker);
   if (blockingIssueLabels.length === 0 && confidence.level === "low") {
-    blockingIssueLabels.push(confidence.reasons[0]?.detail ?? "A required financial input");
+    blockingIssueLabels.push(
+      confidence.reasons.find((reason) => reason.code === "assumption_unconfirmed")?.detail ??
+        confidence.reasons[0]?.detail ??
+        "A required financial input"
+    );
   }
   const explanation = buildExplanation({
     blockingIssueLabels,

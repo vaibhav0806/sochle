@@ -36,7 +36,7 @@ This document is the completion gate for every milestone. A milestone is not com
 - Cover authentication, authorization, navigation, critical writes, persistence after reload, demo-mode isolation, and visible failure/freshness states.
 - Keep E2E tests deterministic and few. Do not duplicate unit-test permutations in a browser.
 - Capture traces, screenshots, and video only on failure. Artifacts must contain synthetic data only.
-- Run with `pnpm e2e` after the web build and migrations are available.
+- Run with `pnpm e2e`; the command rebuilds the production web app and extension first so stale artifacts cannot produce false results.
 - Install the browser once with `pnpm exec playwright install chromium`.
 
 ## Coverage policy

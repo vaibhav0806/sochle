@@ -78,6 +78,65 @@ describe("evaluatePurchase", () => {
     expect(result.explanation.headline).toContain("Likely fits");
   });
 
+  it("does not block when an unconfirmed salary is excluded from the calculation", () => {
+    const purchase = input();
+    purchase.rules.salary.confirmed = false;
+
+    const result = evaluatePurchase(purchase);
+
+    expect(result.inputs.expectedIncomeMinor).toBe(0);
+    expect(result.confidence.level).toBe("high");
+    expect(result.verdict).toBe("comfortably_affordable");
+  });
+
+  it("ignores an estimated obligation outside the forecast horizon", () => {
+    const purchase = input();
+    purchase.rules.forecastHorizon = { days: 7, kind: "rolling_days" };
+    purchase.financialState.upcomingObligations = [
+      {
+        amount: { currency: "INR", minor: 5_000_00 },
+        budgetTreatment: "additional",
+        certainty: "estimated",
+        dueOn: "2026-08-25",
+        id: "later-estimated-bill",
+        name: "Later estimated bill",
+        source: "recurring_expense",
+      },
+    ];
+
+    const result = evaluatePurchase(purchase);
+
+    expect(result.inputs.confirmedObligationsMinor).toBe(0);
+    expect(result.confidence.level).toBe("high");
+    expect(result.verdict).toBe("comfortably_affordable");
+  });
+
+  it("explains the low-confidence cause instead of an earlier aging warning", () => {
+    const purchase = input();
+    purchase.financialState.sourceFreshness = purchase.financialState.sourceFreshness.map(
+      (source) =>
+        source.source === "total_balance"
+          ? { ...source, refreshedAt: "2026-08-17T05:59:59.999Z", status: "aging" }
+          : source
+    );
+    purchase.financialState.expectedIncome = [
+      {
+        amount: { currency: "INR", minor: 10_000_00 },
+        certainty: "estimated",
+        dueOn: "2026-08-20",
+        id: "estimated-income",
+        name: "Estimated income",
+        source: "other",
+      },
+    ];
+
+    const result = evaluatePurchase(purchase);
+
+    expect(result.confidence.level).toBe("low");
+    expect(result.explanation.reason).toContain("A required financial assumption is unconfirmed");
+    expect(result.explanation.reason).not.toContain("total_balance");
+  });
+
   it("gates an older credit-card source when its exposure changes the verdict", () => {
     const purchase = input();
     purchase.financialState.sourceFreshness = purchase.financialState.sourceFreshness.map(

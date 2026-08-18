@@ -34,7 +34,7 @@ test.afterEach(async () => {
 });
 
 test("a paired extension evaluates a product and records an outcome", async () => {
-  await seedDecisionDatabase({ agingCreditCards: true });
+  await seedDecisionDatabase({ realisticAgingSources: true });
   const rawCredential = randomBytes(24).toString("hex");
   const extensionPath = resolve("apps/extension/.output/chrome-mv3");
   const profilePath = await mkdtemp(`${tmpdir()}/sochle-extension-`);

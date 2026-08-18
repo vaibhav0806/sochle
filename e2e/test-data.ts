@@ -80,7 +80,7 @@ function addDays(date: Date, days: number): string {
 }
 
 export async function seedDecisionDatabase(
-  options: { agingCreditCards?: boolean } = {}
+  options: { realisticAgingSources?: boolean } = {}
 ): Promise<void> {
   const database = createSochleDatabase(e2eDatabaseUrl);
   try {
@@ -101,13 +101,20 @@ export async function seedDecisionDatabase(
       observedMonthlySpending: { currency: "INR", minor: 40_000_00 },
       reconciliation: [],
       sourceFreshness: REQUIRED_DECISION_SOURCES.map((source) => ({
-        refreshedAt:
-          options.agingCreditCards === true && source === "credit_cards"
+        refreshedAt: options.realisticAgingSources
+          ? source === "credit_cards"
             ? new Date(now.getTime() - 48 * 60 * 60 * 1_000).toISOString()
-            : refreshedAt,
+            : source === "total_balance" || source === "bank_accounts"
+              ? new Date(now.getTime() - 16 * 60 * 60 * 1_000).toISOString()
+              : refreshedAt
+          : refreshedAt,
         source,
-        status: options.agingCreditCards === true && source === "credit_cards" ? "aging" : "fresh",
-        ...(options.agingCreditCards === true && source === "credit_cards"
+        status:
+          options.realisticAgingSources &&
+          (source === "credit_cards" || source === "total_balance" || source === "bank_accounts")
+            ? "aging"
+            : "fresh",
+        ...(options.realisticAgingSources === true && source === "credit_cards"
           ? { uncertaintyEffect: { maxMinor: 0, minMinor: -80_000_00 } }
           : {}),
       })),
@@ -131,6 +138,19 @@ export async function seedDecisionDatabase(
           name: "Synthetic card bill",
           source: "credit_card",
         },
+        ...(options.realisticAgingSources
+          ? [
+              {
+                amount: { currency: "INR" as const, minor: 18_000_00 },
+                budgetTreatment: "additional" as const,
+                certainty: "estimated" as const,
+                dueOn: addDays(now, 40),
+                id: "e2e-later-estimated-rent",
+                name: "Estimated rent outside the horizon",
+                source: "recurring_expense" as const,
+              },
+            ]
+          : []),
       ],
     };
     await financialRepository.saveSnapshot(connection.id, decisionState, "e2e-decision-snapshot");
@@ -146,7 +166,7 @@ export async function seedDecisionDatabase(
       monthlyInvestmentTarget: { currency: "INR", minor: 25_000_00 },
       salary: {
         amount: { currency: "INR", minor: 0 },
-        confirmed: true,
+        confirmed: false,
         dayOfMonth: 31,
       },
       version: 1,

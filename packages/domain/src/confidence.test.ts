@@ -40,6 +40,41 @@ describe("materialityThresholdMinor", () => {
 });
 
 describe("assessConfidence", () => {
+  it.each(REQUIRED_DECISION_SOURCES.filter((source) => source !== "credit_cards"))(
+    "applies the 6-hour and 24-hour boundaries independently to %s",
+    (targetSource) => {
+      const withTimestamp = (refreshedAt: string) =>
+        freshSources.map((source) =>
+          source.source === targetSource ? { ...source, refreshedAt } : source
+        );
+
+      expect(
+        assessConfidence({
+          ...baseInput,
+          sources: withTimestamp("2026-08-17T05:59:59.999Z"),
+        }).level
+      ).toBe("medium");
+      expect(
+        assessConfidence({
+          ...baseInput,
+          sources: withTimestamp("2026-08-16T11:59:59.999Z"),
+        }).level
+      ).toBe("low");
+    }
+  );
+
+  it.each(REQUIRED_DECISION_SOURCES)(
+    "marks %s low when that required source alone is missing",
+    (missingSource) => {
+      expect(
+        assessConfidence({
+          ...baseInput,
+          sources: freshSources.filter((source) => source.source !== missingSource),
+        }).level
+      ).toBe("low");
+    }
+  );
+
   it("keeps the six-hour boundary high and the 24-hour boundary medium", () => {
     expect(assessConfidence(baseInput).level).toBe("high");
     expect(
