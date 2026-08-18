@@ -201,9 +201,8 @@ function fixtureDocument(merchantDirectory: string, fixture: string, pageUrl: st
 }
 
 describe("merchant adapters", () => {
-  it("extracts the current Amazon desktop price container", () => {
+  it("extracts an Amazon price split across visible price elements", () => {
     const document = fixtureDocument("amazon-in", "primary", "https://www.amazon.in/dp/AMZ001");
-    document.querySelector(".apexPriceToPay")!.className = "reinventPricePriceToPayMargin";
 
     expect(extractProduct(document, "https://www.amazon.in/dp/AMZ001")).toMatchObject({
       confidence: "high",

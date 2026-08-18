@@ -238,6 +238,30 @@ describe("background message boundary", () => {
 
     await expect(handler({ operation: "openCurrentProductCheck" })).resolves.toEqual({
       opened: false,
+      reason: "reload_required",
     });
+  });
+
+  it("distinguishes unsupported tabs without attempting content messaging", async () => {
+    const sendMessage = vi.fn();
+    const handler = createBackgroundMessageHandler({
+      api: {
+        createDecision: vi.fn(),
+        disconnect: vi.fn(),
+        getSession: vi.fn(async () => ({ appUrl: apiOrigin, kind: "unpaired" as const })),
+        setOutcome: vi.fn(),
+      },
+      pair: vi.fn(),
+      tabs: {
+        queryActive: async () => ({ id: 42, url: "https://example.com/product" }),
+        sendMessage,
+      },
+    });
+
+    await expect(handler({ operation: "openCurrentProductCheck" })).resolves.toEqual({
+      opened: false,
+      reason: "unsupported",
+    });
+    expect(sendMessage).not.toHaveBeenCalled();
   });
 });

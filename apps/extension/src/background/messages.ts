@@ -40,13 +40,13 @@ export function createBackgroundMessageHandler(options: {
       case "openCurrentProductCheck": {
         const tab = await options.tabs.queryActive();
         if (tab?.id === undefined || tab.url === undefined || adapterForUrl(tab.url) === null) {
-          return { opened: false as const };
+          return { opened: false as const, reason: "unsupported" as const };
         }
         try {
           await options.tabs.sendMessage(tab.id, { operation: "showManualCheck" });
           return { opened: true as const };
         } catch {
-          return { opened: false as const };
+          return { opened: false as const, reason: "reload_required" as const };
         }
       }
     }

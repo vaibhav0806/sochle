@@ -63,13 +63,25 @@ describe("extension popup", () => {
 
   it("explains when the active tab is unsupported", async () => {
     const sendMessage = vi.fn(async (message: ExtensionBackgroundRequest) =>
-      message.operation === "getSession" ? paired : { opened: false }
+      message.operation === "getSession" ? paired : { opened: false, reason: "unsupported" }
     );
     render(<App openUrl={vi.fn()} sendMessage={sendMessage} />);
 
     fireEvent.click(await screen.findByRole("button", { name: "Check current product" }));
     expect((await screen.findByRole("alert")).textContent).toContain(
       "Open a product on Amazon India, Flipkart, or Myntra"
+    );
+  });
+
+  it("asks for a tab reload when the extension listener is stale", async () => {
+    const sendMessage = vi.fn(async (message: ExtensionBackgroundRequest) =>
+      message.operation === "getSession" ? paired : { opened: false, reason: "reload_required" }
+    );
+    render(<App openUrl={vi.fn()} sendMessage={sendMessage} />);
+
+    fireEvent.click(await screen.findByRole("button", { name: "Check current product" }));
+    expect((await screen.findByRole("alert")).textContent).toContain(
+      "Reload this product tab after updating the extension"
     );
   });
 

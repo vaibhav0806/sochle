@@ -62,7 +62,11 @@ export function App({ openUrl, sendMessage }: AppProps) {
       response === null ||
       Reflect.get(response, "opened") !== true
     ) {
-      setError("Open a product on Amazon India, Flipkart, or Myntra, then try again.");
+      setError(
+        Reflect.get(response ?? {}, "reason") === "reload_required"
+          ? "Reload this product tab after updating the extension, then try again."
+          : "Open a product on Amazon India, Flipkart, or Myntra, then try again."
+      );
     }
   }
 
