@@ -38,6 +38,23 @@ describe("detectDataIssues", () => {
     );
   });
 
+  it("keeps bounded stale-card exposure advisory for per-purchase sensitivity", () => {
+    const state = normalizeFoldSnapshot(foldCoreResponses, "2026-08-20T07:00:00.000Z");
+
+    expect(detectDataIssues(state, { largeTransactionMinor: 500_000 })).toContainEqual({
+      details: {
+        liquidityEffectMaxMinor: 0,
+        liquidityEffectMinMinor: -18_000_000,
+        refreshedAt: "2026-08-17T06:00:00.000Z",
+      },
+      materialityMinor: 0,
+      relatedEntityId: "credit_cards",
+      relatedEntityType: "source",
+      severity: "warning",
+      type: "stale_source",
+    });
+  });
+
   it("trusts source-classified transfers and card repayments without duplicate review", () => {
     const state = normalizeFoldSnapshot(foldCoreResponses, "2026-08-17T06:30:00.000Z");
     state.transactions.push(

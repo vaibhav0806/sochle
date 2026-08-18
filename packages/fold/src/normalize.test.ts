@@ -76,4 +76,33 @@ describe("normalizeFoldSnapshot", () => {
       status: "fresh",
     });
   });
+
+  it("uses the Fold card cadence and bounds stale-card liability by available credit", () => {
+    const state = normalizeFoldSnapshot(foldCoreResponses, "2026-08-19T06:30:00.000Z");
+
+    expect(state.sourceFreshness).toContainEqual({
+      refreshedAt: "2026-08-17T06:00:00.000Z",
+      source: "credit_cards",
+      status: "aging",
+      uncertaintyEffect: { maxMinor: 0, minMinor: -18_000_000 },
+    });
+  });
+
+  it("retains available-credit exposure when the last known outstanding is zero", () => {
+    const creditCards = {
+      ...foldCoreResponses.creditCards,
+      credit_cards: foldCoreResponses.creditCards.credit_cards.map((card) => ({
+        ...card,
+        outstanding: 0,
+      })),
+    };
+    const state = normalizeFoldSnapshot(
+      { ...foldCoreResponses, creditCards },
+      "2026-08-20T06:30:00.000Z"
+    );
+
+    expect(
+      state.sourceFreshness.find((source) => source.source === "credit_cards")?.uncertaintyEffect
+    ).toEqual({ maxMinor: 0, minMinor: -18_000_000 });
+  });
 });

@@ -31,7 +31,7 @@ These defaults resolve PRD open questions for the first implementation and remai
 - Treat planned investments as goals, not hard debt obligations. Breaching them produces `requires_reducing_investments`.
 - Default the large-purchase threshold to ₹10,000 and make it configurable.
 - Show a passive extension control automatically on supported product pages; calculate only after user invocation.
-- Rate snapshot confidence as high through 6 hours, medium through 24 hours, and low after 24 hours. Any source required by the calculation can lower the overall rating.
+- Rate most snapshot sources as high through 6 hours, medium through 24 hours, and low after 24 hours. Credit-card data follows Fold's slower cadence: high through 24 hours, medium through 72 hours, then verdict-sensitive using bounded remaining-credit exposure.
 - Default the forecast horizon to the next configured salary date, capped at 30 days; allow an explicit custom date later.
 - Exclude Fold accounts marked user-excluded, passively tracked, or pending from spendable liquidity and preserve the exclusion reason.
 - Count “amount preserved” only for confirmed skipped purchases. Report delayed purchases separately.

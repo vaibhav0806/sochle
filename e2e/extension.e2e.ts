@@ -34,7 +34,7 @@ test.afterEach(async () => {
 });
 
 test("a paired extension evaluates a product and records an outcome", async () => {
-  await seedDecisionDatabase({ staleCreditCards: true });
+  await seedDecisionDatabase({ agingCreditCards: true });
   const rawCredential = randomBytes(24).toString("hex");
   const extensionPath = resolve("apps/extension/.output/chrome-mv3");
   const profilePath = await mkdtemp(`${tmpdir()}/sochle-extension-`);
@@ -80,13 +80,9 @@ test("a paired extension evaluates a product and records an outcome", async () =
     await expect(product.getByRole("button", { name: "सोचle" })).toBeVisible();
     await product.getByRole("button", { name: "सोचle" }).click();
     await product.getByRole("button", { name: "Calculate" }).click();
-    await expect(product.getByText(/Credit-card data is older than 24 hours/)).toBeVisible();
-    const recoveryRequest = context.waitForEvent(
-      "request",
-      (request) => request.url() === "http://127.0.0.1:3101/connections"
-    );
-    await product.getByRole("button", { name: "Refresh financial data →" }).click();
-    await recoveryRequest;
+    await expect(product.getByText("Likely fits—but ek quick check.")).toBeVisible();
+    await expect(product.getByText("Aging financial data")).toBeVisible();
+    await expect(product.getByRole("button", { name: "Refresh financial data →" })).toHaveCount(0);
     await product.getByRole("button", { name: "Wait" }).click();
     await expect(product.getByText("Saved: waiting")).toBeVisible();
   } finally {

@@ -22,6 +22,7 @@ export type SourceFreshness = {
   source: FinancialSource;
   refreshedAt: string | null;
   status: "fresh" | "aging" | "stale" | "missing";
+  uncertaintyEffect?: { maxMinor: number; minMinor: number };
 };
 
 export type ExpectedIncome = {

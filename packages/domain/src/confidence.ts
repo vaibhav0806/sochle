@@ -25,7 +25,9 @@ export type ConfidenceReason = {
     | "source_aging"
     | "source_invalid"
     | "source_missing"
+    | "source_sensitive"
     | "source_stale"
+    | "source_unbounded"
     | "verdict_sensitive";
   detail: string;
   issueId?: string;
@@ -57,6 +59,7 @@ export type ConfidenceInput = {
 
 const SIX_HOURS_MS = 6 * 60 * 60 * 1_000;
 const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1_000;
+const SEVENTY_TWO_HOURS_MS = 72 * 60 * 60 * 1_000;
 
 export function materialityThresholdMinor(
   priceMinor: number,
@@ -132,18 +135,55 @@ export function assessConfidence(input: ConfidenceInput): ConfidenceAssessment {
       continue;
     }
     const age = evaluatedTimestamp - refreshedTimestamp;
-    if (age > TWENTY_FOUR_HOURS_MS) {
-      lowerTo("low");
+    const agingAfter = requiredSource === "credit_cards" ? TWENTY_FOUR_HOURS_MS : SIX_HOURS_MS;
+    const staleAfter =
+      requiredSource === "credit_cards" ? SEVENTY_TWO_HOURS_MS : TWENTY_FOUR_HOURS_MS;
+    if (age > staleAfter) {
+      lowerTo(requiredSource === "credit_cards" ? "medium" : "low");
       reasons.push({
         code: "source_stale",
-        detail: `${requiredSource} is older than 24 hours`,
+        detail: `${requiredSource} is older than ${requiredSource === "credit_cards" ? 72 : 24} hours`,
         source: requiredSource,
       });
-    } else if (age > SIX_HOURS_MS) {
+      if (requiredSource === "credit_cards") {
+        const effect = source.uncertaintyEffect;
+        if (
+          effect === undefined ||
+          !Number.isSafeInteger(effect.minMinor) ||
+          !Number.isSafeInteger(effect.maxMinor) ||
+          effect.minMinor > effect.maxMinor
+        ) {
+          lowerTo("low");
+          reasons.push({
+            code: "source_unbounded",
+            detail: "credit_cards has no bounded recent-spending exposure",
+            source: requiredSource,
+          });
+        } else {
+          const endpointVerdicts = [effect.minMinor, effect.maxMinor].map((adjustmentMinor) => {
+            const verdict = input.verdictForLiquidityAdjustment(adjustmentMinor);
+            sensitivity.push({
+              adjustmentMinor,
+              issueId: "source:credit_cards",
+              verdict,
+            });
+            return verdict;
+          });
+          if (endpointVerdicts.some((verdict) => verdict !== input.baseVerdict)) {
+            lowerTo("low");
+            reasons.push({
+              code: "source_sensitive",
+              detail: "credit_cards uncertainty can change the verdict",
+              source: requiredSource,
+            });
+          }
+        }
+      }
+    } else if (age > agingAfter) {
       lowerTo("medium");
       reasons.push({
         code: "source_aging",
-        detail: `${requiredSource} is older than 6 hours`,
+        detail: `${requiredSource} is older than ${requiredSource === "credit_cards" ? 24 : 6} hours`,
         source: requiredSource,
       });
     }

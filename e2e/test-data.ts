@@ -80,7 +80,7 @@ function addDays(date: Date, days: number): string {
 }
 
 export async function seedDecisionDatabase(
-  options: { staleCreditCards?: boolean } = {}
+  options: { agingCreditCards?: boolean } = {}
 ): Promise<void> {
   const database = createSochleDatabase(e2eDatabaseUrl);
   try {
@@ -102,11 +102,14 @@ export async function seedDecisionDatabase(
       reconciliation: [],
       sourceFreshness: REQUIRED_DECISION_SOURCES.map((source) => ({
         refreshedAt:
-          options.staleCreditCards === true && source === "credit_cards"
+          options.agingCreditCards === true && source === "credit_cards"
             ? new Date(now.getTime() - 48 * 60 * 60 * 1_000).toISOString()
             : refreshedAt,
         source,
-        status: options.staleCreditCards === true && source === "credit_cards" ? "stale" : "fresh",
+        status: options.agingCreditCards === true && source === "credit_cards" ? "aging" : "fresh",
+        ...(options.agingCreditCards === true && source === "credit_cards"
+          ? { uncertaintyEffect: { maxMinor: 0, minMinor: -80_000_00 } }
+          : {}),
       })),
       transactions: [],
       upcomingObligations: [

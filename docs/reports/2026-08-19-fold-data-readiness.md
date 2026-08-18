@@ -40,10 +40,11 @@ January and February data was almost entirely untagged/no-merchant, while later 
 - User-corrected transactions and merchant rules suppress the same issue on later syncs.
 - Money Inbox separates `Needs attention` from `Optional cleanup` and says explicitly which items affect decisions.
 - Stale source issues show Fold refresh/resync guidance instead of irrelevant transaction-classification controls.
+- Credit-card freshness follows the observed provider cadence: high through 24 hours and medium through 72 hours. Older card data is tested against bounded remaining-credit exposure and blocks only when it can change the verdict or cannot be bounded.
 
 ## Remaining limitations
 
-1. **Stale card or bank data must still block.** A balance older than 24 hours can materially change affordability. The user should refresh the source in Fold and sync Sochle again. This is intentional safety behavior.
+1. **Stale bank data still blocks after 24 hours.** Credit cards use a separate 72-hour cadence and verdict sensitivity because Fold card refreshes are slower. Card exposure that can change the verdict, or cannot be bounded, still blocks.
 2. **Expected income is manual.** Fold's audited surface does not provide a reliable upcoming-salary feed. Salary amount/date must remain user-confirmed; transaction-history inference would be too risky without confirmation.
 3. **Recurring coverage is not demonstrably complete.** Fold returned valid recurring data, but only one active item. Sochle should keep essential monthly spending as an explicit rule and treat detected recurring items as additions, not a complete budget.
 4. **Category-driven analytics remain weak.** With 44% of recent rows untagged, category insights and automatic essential/discretionary splits would be misleading. Merchant rules can improve future classification, but cleanup stays optional.

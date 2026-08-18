@@ -65,6 +65,75 @@ describe("assessConfidence", () => {
     ).toBe("low");
   });
 
+  it("keeps credit-card data medium through its 72-hour provider cadence", () => {
+    const result = assessConfidence({
+      ...baseInput,
+      sources: freshSources.map((source) =>
+        source.source === "credit_cards"
+          ? {
+              ...source,
+              refreshedAt: "2026-08-14T12:00:00.000Z",
+              status: "aging" as const,
+              uncertaintyEffect: { maxMinor: 0, minMinor: -20_000_00 },
+            }
+          : source
+      ),
+      verdictForLiquidityAdjustment: (adjustment) =>
+        adjustment < 0 ? "affordable_with_tradeoffs" : "comfortably_affordable",
+    });
+
+    expect(result.level).toBe("medium");
+    expect(result.reasons).toContainEqual(
+      expect.objectContaining({ code: "source_aging", source: "credit_cards" })
+    );
+  });
+
+  it("keeps an older bounded card source medium when its worst case cannot change the verdict", () => {
+    const result = assessConfidence({
+      ...baseInput,
+      sources: freshSources.map((source) =>
+        source.source === "credit_cards"
+          ? {
+              ...source,
+              refreshedAt: "2026-08-14T11:59:59.999Z",
+              status: "stale" as const,
+              uncertaintyEffect: { maxMinor: 0, minMinor: -20_000_00 },
+            }
+          : source
+      ),
+    });
+
+    expect(result.level).toBe("medium");
+    expect(result.sensitivity).toContainEqual({
+      adjustmentMinor: -20_000_00,
+      issueId: "source:credit_cards",
+      verdict: "comfortably_affordable",
+    });
+  });
+
+  it("blocks an older card source when its bounded exposure can change the verdict", () => {
+    const result = assessConfidence({
+      ...baseInput,
+      sources: freshSources.map((source) =>
+        source.source === "credit_cards"
+          ? {
+              ...source,
+              refreshedAt: "2026-08-14T11:59:59.999Z",
+              status: "stale" as const,
+              uncertaintyEffect: { maxMinor: 0, minMinor: -20_000_00 },
+            }
+          : source
+      ),
+      verdictForLiquidityAdjustment: (adjustment) =>
+        adjustment < 0 ? "affordable_with_tradeoffs" : "comfortably_affordable",
+    });
+
+    expect(result.level).toBe("low");
+    expect(result.reasons).toContainEqual(
+      expect.objectContaining({ code: "source_sensitive", source: "credit_cards" })
+    );
+  });
+
   it("marks a missing required source and unconfirmed assumptions low", () => {
     expect(assessConfidence({ ...baseInput, sources: freshSources.slice(1) }).level).toBe("low");
     expect(assessConfidence({ ...baseInput, assumptionsConfirmed: false }).level).toBe("low");

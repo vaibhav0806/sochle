@@ -28,6 +28,7 @@ type FoldSnapshotInput = Record<
 
 const SIX_HOURS_MS = 6 * 60 * 60 * 1000;
 const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000;
+const SEVENTY_TWO_HOURS_MS = 72 * 60 * 60 * 1000;
 
 function toMoney(rupees: number): Money {
   const minor = Math.round(rupees * 100);
@@ -52,16 +53,24 @@ function latestTimestamp(values: Array<string | null>): string | null {
 function freshness(
   source: FinancialSource,
   refreshedAt: string | null,
-  syncedAt: string
+  syncedAt: string,
+  uncertaintyEffect?: SourceFreshness["uncertaintyEffect"]
 ): SourceFreshness {
   if (refreshedAt === null) {
     return { refreshedAt, source, status: "missing" };
   }
 
   const age = new Date(syncedAt).getTime() - new Date(refreshedAt).getTime();
-  const status = age <= SIX_HOURS_MS ? "fresh" : age <= TWENTY_FOUR_HOURS_MS ? "aging" : "stale";
+  const agingAfter = source === "credit_cards" ? TWENTY_FOUR_HOURS_MS : SIX_HOURS_MS;
+  const staleAfter = source === "credit_cards" ? SEVENTY_TWO_HOURS_MS : TWENTY_FOUR_HOURS_MS;
+  const status = age <= agingAfter ? "fresh" : age <= staleAfter ? "aging" : "stale";
 
-  return { refreshedAt, source, status };
+  return {
+    refreshedAt,
+    source,
+    status,
+    ...(uncertaintyEffect === undefined ? {} : { uncertaintyEffect }),
+  };
 }
 
 function transactionClassification(
@@ -131,9 +140,20 @@ export function normalizeFoldSnapshot(
     })
   );
 
-  const payableCards = (creditCards.credit_cards ?? []).filter(
-    (card) => card.relationship?.role !== "CHILD" && card.outstanding > 0
+  const primaryCards = (creditCards.credit_cards ?? []).filter(
+    (card) => card.relationship?.role !== "CHILD"
   );
+  const payableCards = primaryCards.filter((card) => card.outstanding > 0);
+  const availableCredit = primaryCards.reduce<number | null>((total, card) => {
+    if (total === null) return null;
+    const cycle = card.current_cycle ?? card.previous_cycle;
+    if (cycle === null || cycle.available_credit_limit < 0) return null;
+    return total + cycle.available_credit_limit;
+  }, 0);
+  const creditCardUncertaintyEffect =
+    availableCredit === null
+      ? undefined
+      : { maxMinor: 0, minMinor: -toMoney(availableCredit).minor };
   const cardObligations = toMoney(
     payableCards.reduce((total, card) => total + card.outstanding, 0)
   );
@@ -276,7 +296,7 @@ export function normalizeFoldSnapshot(
     sourceFreshness: [
       freshness("total_balance", totalBalance.as_of, syncedAt),
       freshness("bank_accounts", bankRefreshedAt, syncedAt),
-      freshness("credit_cards", cardsRefreshedAt, syncedAt),
+      freshness("credit_cards", cardsRefreshedAt, syncedAt, creditCardUncertaintyEffect),
       freshness("transactions", syncedAt, syncedAt),
       freshness("spending_summary", syncedAt, syncedAt),
       freshness("recurring_expenses", syncedAt, syncedAt),

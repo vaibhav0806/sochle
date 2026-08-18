@@ -52,13 +52,29 @@ export function detectDataIssues(
       return [];
     }
 
+    const effect = source.uncertaintyEffect;
+    const boundedCardExposure =
+      source.source === "credit_cards" &&
+      effect !== undefined &&
+      Number.isSafeInteger(effect.minMinor) &&
+      Number.isSafeInteger(effect.maxMinor) &&
+      effect.minMinor <= effect.maxMinor;
+
     return [
       {
-        details: { refreshedAt: source.refreshedAt },
+        details: {
+          refreshedAt: source.refreshedAt,
+          ...(boundedCardExposure
+            ? {
+                liquidityEffectMaxMinor: effect.maxMinor,
+                liquidityEffectMinMinor: effect.minMinor,
+              }
+            : {}),
+        },
         materialityMinor: 0,
         relatedEntityId: source.source,
         relatedEntityType: "source",
-        severity: "blocking",
+        severity: boundedCardExposure ? "warning" : "blocking",
         type: source.status === "stale" ? "stale_source" : "missing_source",
       },
     ];

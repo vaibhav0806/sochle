@@ -82,19 +82,26 @@ const sourceLabels: Partial<Record<FinancialSource, string>> = {
 };
 
 function freshnessRecovery(reasons: ConfidenceReason[]) {
-  const reason = reasons.find(
-    (candidate) =>
-      candidate.source !== undefined &&
+  const recoverable = reasons.filter((candidate) => candidate.source !== undefined);
+  const reason =
+    recoverable.find((candidate) =>
+      ["source_sensitive", "source_unbounded"].includes(candidate.code)
+    ) ??
+    recoverable.find((candidate) =>
       ["source_invalid", "source_missing", "source_stale"].includes(candidate.code)
-  );
+    );
   if (reason?.source === undefined) return null;
   const label = sourceLabels[reason.source] ?? "Financial data";
   const blocker =
-    reason.code === "source_stale"
-      ? `${label} is older than 24 hours`
-      : reason.code === "source_missing"
-        ? `${label} has no usable refresh timestamp`
-        : `${label} has an invalid refresh timestamp`;
+    reason.code === "source_sensitive"
+      ? "Unobserved credit-card spending can change this verdict"
+      : reason.code === "source_unbounded"
+        ? "Recent credit-card spending cannot be bounded from Fold data"
+        : reason.code === "source_stale"
+          ? `${label} is older than ${reason.source === "credit_cards" ? 72 : 24} hours`
+          : reason.code === "source_missing"
+            ? `${label} has no usable refresh timestamp`
+            : `${label} has an invalid refresh timestamp`;
   const subject =
     reason.source === "credit_cards"
       ? "your credit card"

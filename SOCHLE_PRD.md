@@ -374,12 +374,15 @@ Every result receives a confidence rating.
 
 - Some transactions are unclassified but below a materiality threshold.
 - One source is stale but not expected to change the verdict.
+- Credit-card data is between 24 and 72 hours old, matching the observed provider cadence.
+- Credit-card data older than 72 hours has bounded remaining-credit exposure that does not change the verdict.
 - Recurring expenses rely partially on user-entered assumptions.
 
 ### Low confidence
 
 - Large unclassified transactions exist.
 - Account data is stale or connection is pending.
+- Credit-card data is older than 72 hours and its remaining-credit exposure can change the verdict or cannot be bounded.
 - Card outstanding and repayment state conflict.
 - The verdict changes depending on whether an ambiguous transaction is treated as spending.
 - Expected income is uncertain.
