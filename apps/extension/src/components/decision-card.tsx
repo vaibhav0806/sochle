@@ -183,6 +183,15 @@ export function DecisionCard({
             )}
           </div>
           {result.primaryAction !== null && <p className="sochle-action">{result.primaryAction}</p>}
+          {(result.freshness === "stale" || result.freshness === "missing") && (
+            <button
+              className="sochle-link"
+              onClick={() => onOpenApp(new URL("/connections", session.appUrl).toString())}
+              type="button"
+            >
+              Refresh financial data →
+            </button>
+          )}
           <button className="sochle-secondary" onClick={() => setExpanded(!expanded)} type="button">
             {expanded ? "Hide the maths" : "Show the maths"}
           </button>

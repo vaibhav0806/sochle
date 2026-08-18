@@ -59,7 +59,10 @@ describe("evaluatePurchase", () => {
   it("gates a stale source to insufficient confidence", () => {
     const purchase = input();
     purchase.financialState.sourceFreshness = purchase.financialState.sourceFreshness.map(
-      (source) => ({ ...source, refreshedAt: "2026-08-16T11:59:00.000Z", status: "stale" })
+      (source) =>
+        source.source === "credit_cards"
+          ? { ...source, refreshedAt: "2026-08-16T11:59:00.000Z", status: "stale" }
+          : source
     );
 
     const result = evaluatePurchase(purchase);
@@ -67,6 +70,10 @@ describe("evaluatePurchase", () => {
     expect(result.financialVerdict).toBe("comfortably_affordable");
     expect(result.confidence.level).toBe("low");
     expect(result.verdict).toBe("insufficient_confidence");
+    expect(result.explanation.reason).toContain("Credit-card data is older than 24 hours");
+    expect(result.explanation.action).toBe(
+      "Refresh your credit card in Fold, then sync Sochle from Financial data."
+    );
   });
 
   it("reserves an undated card remainder immediately without blocking confidence", () => {

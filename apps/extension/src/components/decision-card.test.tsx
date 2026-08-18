@@ -109,6 +109,24 @@ describe("decision card", () => {
     expect(screen.getByText(result.headline)).not.toBeNull();
   });
 
+  it("opens financial data recovery for a stale result", async () => {
+    const values = props({
+      onEvaluate: vi.fn(async () => ({
+        ...result,
+        confidence: "low" as const,
+        freshness: "stale" as const,
+        primaryAction: "Refresh your credit card in Fold, then sync Sochle.",
+        verdict: "insufficient_confidence" as const,
+      })),
+    });
+    render(<DecisionCard {...values} />);
+    fireEvent.click(screen.getByRole("button", { name: /सोचle/i }));
+    fireEvent.click(screen.getByRole("button", { name: "Calculate" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Refresh financial data →" }));
+
+    expect(values.onOpenApp).toHaveBeenCalledWith("http://localhost:3000/connections");
+  });
+
   it("labels low confidence while preserving the server-owned brand copy", async () => {
     render(
       <DecisionCard

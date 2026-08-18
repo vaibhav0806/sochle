@@ -2,10 +2,11 @@ import {
   assessConfidence,
   materialityThresholdMinor,
   type ConfidenceAssessment,
+  type ConfidenceReason,
   type DecisionIssue,
 } from "./confidence";
 import { buildExplanation, type DecisionExplanation } from "./explanations";
-import type { Money, NormalizedFinancialState } from "./financial-state";
+import type { FinancialSource, Money, NormalizedFinancialState } from "./financial-state";
 import {
   buildDailyForecast,
   calculateHeadrooms,
@@ -66,6 +67,45 @@ export type DecisionResult = {
   inputs: DecisionInputs;
   verdict: Verdict;
 };
+
+const sourceLabels: Partial<Record<FinancialSource, string>> = {
+  bank_accounts: "Bank-account data",
+  credit_cards: "Credit-card data",
+  mutual_funds: "Mutual-fund data",
+  net_worth: "Net-worth data",
+  recurring_expenses: "Recurring-expense data",
+  spending_summary: "Spending-summary data",
+  stocks: "Stock data",
+  total_balance: "Bank-balance data",
+  transactions: "Transaction data",
+  upcoming_recurring_cycles: "Upcoming recurring-payment data",
+};
+
+function freshnessRecovery(reasons: ConfidenceReason[]) {
+  const reason = reasons.find(
+    (candidate) =>
+      candidate.source !== undefined &&
+      ["source_invalid", "source_missing", "source_stale"].includes(candidate.code)
+  );
+  if (reason?.source === undefined) return null;
+  const label = sourceLabels[reason.source] ?? "Financial data";
+  const blocker =
+    reason.code === "source_stale"
+      ? `${label} is older than 24 hours`
+      : reason.code === "source_missing"
+        ? `${label} has no usable refresh timestamp`
+        : `${label} has an invalid refresh timestamp`;
+  const subject =
+    reason.source === "credit_cards"
+      ? "your credit card"
+      : reason.source === "bank_accounts" || reason.source === "total_balance"
+        ? "your bank accounts"
+        : "the source data";
+  return {
+    action: `Refresh ${subject} in Fold, then sync Sochle from Financial data.`,
+    blocker,
+  };
+}
 
 function assertMoney(value: Money, label: string, positive = false): number {
   if (
@@ -394,9 +434,11 @@ export function evaluatePurchase(input: EvaluatePurchaseInput): DecisionResult {
   const verdict: Verdict =
     confidence.level === "low" ? "insufficient_confidence" : financialVerdict;
   const issueLabels = new Map(dataIssues.map((issue) => [issue.id, issue.label]));
+  const recovery = freshnessRecovery(confidence.reasons);
   const blockingIssueLabels = confidence.blockingIssueIds.map(
     (issueId) => issueLabels.get(issueId) ?? issueId
   );
+  if (recovery !== null) blockingIssueLabels.unshift(recovery.blocker);
   if (blockingIssueLabels.length === 0 && confidence.level === "low") {
     blockingIssueLabels.push(confidence.reasons[0]?.detail ?? "A required financial input");
   }
@@ -410,6 +452,7 @@ export function evaluatePurchase(input: EvaluatePurchaseInput): DecisionResult {
       rules.monthlyInvestmentTarget.minor,
       Math.max(0, -headrooms.goalMinor)
     ),
+    ...(recovery === null ? {} : { recoveryAction: recovery.action }),
     technicalHeadroomMinor: headrooms.technicalMinor,
     verdict,
   });

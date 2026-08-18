@@ -79,7 +79,9 @@ function addDays(date: Date, days: number): string {
   return result.toISOString().slice(0, 10);
 }
 
-export async function seedDecisionDatabase(): Promise<void> {
+export async function seedDecisionDatabase(
+  options: { staleCreditCards?: boolean } = {}
+): Promise<void> {
   const database = createSochleDatabase(e2eDatabaseUrl);
   try {
     await database.db.delete(connections);
@@ -99,9 +101,12 @@ export async function seedDecisionDatabase(): Promise<void> {
       observedMonthlySpending: { currency: "INR", minor: 40_000_00 },
       reconciliation: [],
       sourceFreshness: REQUIRED_DECISION_SOURCES.map((source) => ({
-        refreshedAt,
+        refreshedAt:
+          options.staleCreditCards === true && source === "credit_cards"
+            ? new Date(now.getTime() - 48 * 60 * 60 * 1_000).toISOString()
+            : refreshedAt,
         source,
-        status: "fresh",
+        status: options.staleCreditCards === true && source === "credit_cards" ? "stale" : "fresh",
       })),
       transactions: [],
       upcomingObligations: [

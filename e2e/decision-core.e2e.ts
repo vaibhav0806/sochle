@@ -9,7 +9,7 @@ import {
   seedStaleSourceIssue,
 } from "./test-data";
 
-test.beforeEach(seedDecisionDatabase);
+test.beforeEach(async () => seedDecisionDatabase());
 test.afterEach(resetLiveDatabase);
 
 async function loginOwner(page: Page) {

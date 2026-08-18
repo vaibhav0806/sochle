@@ -16,6 +16,7 @@ export type ExplanationInput = {
   firstComfortablyAffordableDate: string | null;
   goalHeadroomMinor: number;
   investmentReductionMinor: number;
+  recoveryAction?: string;
   technicalHeadroomMinor: number;
   verdict: Verdict;
 };
@@ -101,9 +102,9 @@ export function buildExplanation(input: ExplanationInput): DecisionExplanation {
     }
     const blocker = input.blockingIssueLabels[0] ?? "A required financial input";
     return {
-      action: "Resolve the blocking item in Money Inbox and check again.",
+      action: input.recoveryAction ?? "Resolve the blocking item in Money Inbox and check again.",
       headline: "Pehle data sort karte hain, phir decision.",
-      reason: `${blocker} is unresolved, so Sochle cannot give a reliable call.`,
+      reason: `${blocker}, so Sochle cannot give a reliable call.`,
       templateId: "low.insufficient_confidence.v1",
       templateVersion: 1,
     };
