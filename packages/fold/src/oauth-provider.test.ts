@@ -1,7 +1,12 @@
-import type { OAuthDiscoveryState, StoredOAuthTokens } from "@modelcontextprotocol/client";
+import {
+  OAuthError,
+  OAuthErrorCode,
+  type OAuthDiscoveryState,
+  type StoredOAuthTokens,
+} from "@modelcontextprotocol/client";
 import { describe, expect, it } from "vitest";
 
-import { FoldOAuthProvider } from "./oauth-provider";
+import { FoldOAuthProvider, isInvalidOAuthGrant } from "./oauth-provider";
 import type { FoldOAuthState, FoldOAuthStateStore } from "./oauth-provider";
 
 function memoryStore(): FoldOAuthStateStore {
@@ -17,6 +22,18 @@ function memoryStore(): FoldOAuthStateStore {
 }
 
 describe("FoldOAuthProvider", () => {
+  it("identifies an invalid OAuth grant without treating other failures as expired access", () => {
+    expect(
+      isInvalidOAuthGrant(
+        new OAuthError(OAuthErrorCode.InvalidGrant, "The refresh token is no longer valid")
+      )
+    ).toBe(true);
+    expect(isInvalidOAuthGrant(new OAuthError(OAuthErrorCode.ServerError, "Unavailable"))).toBe(
+      false
+    );
+    expect(isInvalidOAuthGrant(new Error("invalid_grant"))).toBe(false);
+  });
+
   it("persists PKCE, state, and tokens across provider instances", async () => {
     const store = memoryStore();
     const provider = new FoldOAuthProvider({

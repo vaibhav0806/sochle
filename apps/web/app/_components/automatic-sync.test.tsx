@@ -34,4 +34,20 @@ describe("automatic account refresh", () => {
     expect(await screen.findByText("Updating your account picture…")).toBeTruthy();
     await act(async () => finish());
   });
+
+  it("asks for a reconnect when automatic refresh finds expired access", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () =>
+        Response.json({
+          result: "reconnect_required",
+        })
+      )
+    );
+
+    render(<AutomaticSync enabled />);
+
+    expect(await screen.findByText("Your account connection expired.")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Reconnect account" })).toBeTruthy();
+  });
 });

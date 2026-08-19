@@ -19,6 +19,9 @@ function resultMessage(result: string | undefined): string | null {
   if (result === "synced") return "Your account picture is up to date.";
   if (result === "cached_throttled") return "You already have the latest available picture.";
   if (result === "connect_first") return "Reconnect your account before refreshing.";
+  if (result === "reconnect_required") {
+    return "Your account connection expired. Reconnect it to keep checking purchases.";
+  }
   return "That action is complete.";
 }
 

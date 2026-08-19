@@ -8,6 +8,11 @@ import type {
   StoredOAuthClientInformation,
   StoredOAuthTokens,
 } from "@modelcontextprotocol/client";
+import { OAuthError, OAuthErrorCode } from "@modelcontextprotocol/client";
+
+export function isInvalidOAuthGrant(error: unknown): boolean {
+  return error instanceof OAuthError && error.code === OAuthErrorCode.InvalidGrant;
+}
 
 export type FoldOAuthState = {
   clientInformationByIssuer: Record<string, StoredOAuthClientInformation>;

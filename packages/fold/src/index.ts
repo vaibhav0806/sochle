@@ -2,7 +2,7 @@ export { FoldGateway } from "./client";
 export type { FoldMcpToolClient, FoldSyncPayload } from "./client";
 export { detectDataIssues } from "./issues";
 export type { DetectedDataIssue } from "./issues";
-export { FoldOAuthProvider } from "./oauth-provider";
+export { FoldOAuthProvider, isInvalidOAuthGrant } from "./oauth-provider";
 export type { FoldOAuthState, FoldOAuthStateStore } from "./oauth-provider";
 export { normalizeFoldSnapshot } from "./normalize";
 export { foldSchemas } from "./schemas";

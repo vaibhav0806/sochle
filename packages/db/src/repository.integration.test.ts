@@ -170,6 +170,31 @@ describe("FinancialRepository", () => {
     await expect(repository.loadAuthorizationState(connection.id, key)).resolves.toEqual(state);
   });
 
+  it("disconnects an expired authorization without deleting synced financial data", async () => {
+    const connection = await repository.ensureConnection("fold");
+    const key = randomBytes(32);
+    await repository.saveAuthorizationState(
+      connection.id,
+      { accessToken: "expired-access", refreshToken: "expired-refresh" },
+      key
+    );
+    await repository.persistProjection(connection.id, snapshot);
+    await repository.setConnectionStatus(connection.id, "connected");
+
+    await repository.resetAuthorization(connection.id);
+
+    await expect(repository.loadAuthorizationState(connection.id, key)).resolves.toBeNull();
+    await expect(repository.getConnection("fold")).resolves.toMatchObject({
+      id: connection.id,
+      status: "disconnected",
+    });
+    const accountRows = await database.db
+      .select()
+      .from(financialAccounts)
+      .where(eq(financialAccounts.connectionId, connection.id));
+    expect(accountRows).toHaveLength(1);
+  });
+
   it("enforces one running sync and the minimum successful-sync interval", async () => {
     const connection = await repository.ensureConnection("fold");
     const startedAt = new Date("2026-08-17T06:00:00.000Z");

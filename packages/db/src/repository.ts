@@ -119,6 +119,19 @@ export class FinancialRepository {
     ) as T;
   }
 
+  async resetAuthorization(connectionId: string): Promise<void> {
+    await this.db
+      .update(connections)
+      .set({
+        authorizationIv: null,
+        authorizationTag: null,
+        encryptedAuthorization: null,
+        status: "disconnected",
+        updatedAt: new Date(),
+      })
+      .where(eq(connections.id, connectionId));
+  }
+
   async beginSync(connectionId: string, startedAt: Date, minimumIntervalMs: number) {
     const [connection] = await this.db
       .select()

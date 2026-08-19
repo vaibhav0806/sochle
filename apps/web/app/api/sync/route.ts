@@ -1,4 +1,4 @@
-import { FoldFinancialProvider, FoldSyncCoordinator } from "@sochle/fold";
+import { FoldFinancialProvider, FoldSyncCoordinator, isInvalidOAuthGrant } from "@sochle/fold";
 import { NextResponse } from "next/server";
 
 import { isOwnerAuthenticated } from "../../../lib/server/auth";
@@ -41,6 +41,14 @@ export async function POST(request: Request) {
     }
     return NextResponse.redirect(
       new URL(`/connections?result=${detail}`, serverEnv.SOCHLE_APP_URL),
+      303
+    );
+  } catch (error) {
+    if (!isInvalidOAuthGrant(error)) throw error;
+    await repository.resetAuthorization(connection.id);
+    if (automatic) return NextResponse.json({ result: "reconnect_required" });
+    return NextResponse.redirect(
+      new URL("/connections?result=reconnect_required", serverEnv.SOCHLE_APP_URL),
       303
     );
   } finally {

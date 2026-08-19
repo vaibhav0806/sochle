@@ -11,6 +11,7 @@ export async function POST() {
   if (repository === null) return new Response("Live data is disabled", { status: 503 });
 
   const connection = await repository.ensureConnection("fold");
+  await repository.resetAuthorization(connection.id);
   await repository.setConnectionStatus(connection.id, "authorizing");
   let authorizationUrl: URL | null = null;
   const { session } = createFoldSession(repository, connection.id, (url) => {
