@@ -51,6 +51,7 @@ button {
   bottom: 1.25rem;
   box-shadow: 0 1.25rem 3.5rem rgb(23 32 25 / 24%);
   box-sizing: border-box;
+  color: #172019;
   font-size: 0.9rem;
   max-height: calc(100dvh - 2.5rem);
   overflow: auto;
@@ -301,6 +302,12 @@ button {
     background: #171d18;
     border-color: #2a332c;
     box-shadow: 0 1.25rem 3.5rem rgb(0 0 0 / 38%);
+    color: #f0f3ed;
+  }
+
+  .sochle-eyebrow,
+  .sochle-product span {
+    color: #e47b56;
   }
 
   .sochle-card p,

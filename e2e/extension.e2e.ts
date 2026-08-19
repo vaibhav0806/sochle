@@ -86,6 +86,28 @@ test("a paired extension evaluates a product and records an outcome", async () =
     const card = product.getByLabel("Sochle purchase check");
     await expect(card.getByText("Noise Cancelling Headphones")).toBeVisible();
     await expect(card.getByText("₹45,000.00")).toBeVisible();
+    await product.emulateMedia({ colorScheme: "dark", reducedMotion: "reduce" });
+    await expect(card.getByText("Noise Cancelling Headphones")).toHaveCSS(
+      "color",
+      "rgb(240, 243, 237)"
+    );
+    expect(
+      (
+        await new AxeBuilder({ page: product })
+          .disableRules([
+            "document-title",
+            "html-has-lang",
+            "image-alt",
+            "landmark-one-main",
+            "region",
+          ])
+          .analyze()
+      ).violations
+    ).toEqual([]);
+    await expect(card).toHaveScreenshot("extension-card-detected-dark.png", {
+      animations: "disabled",
+    });
+    await product.emulateMedia({ colorScheme: "light", reducedMotion: "reduce" });
     await expect(card).toHaveScreenshot("extension-card-detected.png", { animations: "disabled" });
     await card.getByRole("button", { name: "Check this purchase" }).click();
     await expect(card.getByText("Yes, this fits comfortably.")).toBeVisible();
@@ -108,7 +130,25 @@ test("a paired extension evaluates a product and records an outcome", async () =
           .analyze()
       ).violations
     ).toEqual([]);
-    await product.emulateMedia({ colorScheme: "dark" });
+    await product.emulateMedia({ colorScheme: "dark", reducedMotion: "reduce" });
+    await expect(card.getByText("Yes, this fits comfortably.")).toHaveCSS(
+      "color",
+      "rgb(240, 243, 237)"
+    );
+    await expect(card.getByText("What now?")).toHaveCSS("color", "rgb(240, 243, 237)");
+    expect(
+      (
+        await new AxeBuilder({ page: product })
+          .disableRules([
+            "document-title",
+            "html-has-lang",
+            "image-alt",
+            "landmark-one-main",
+            "region",
+          ])
+          .analyze()
+      ).violations
+    ).toEqual([]);
     await expect(card).toHaveScreenshot("extension-card-result-dark.png", {
       animations: "disabled",
     });
